@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+:root {
+  /* Casino Dark Theme (default) */
+  --color-felt: #1a5c2a;
+  --color-felt-dark: #0f3d1a;
+  --color-felt-light: #2d7a3f;
+  --color-table-border: #8B6914;
+  --color-table-border-inner: #a67c1a;
+  --color-bg: #0a0e14;
+  --color-bg-secondary: #141b24;
+  --color-bg-panel: #1a2332;
+  --color-text: #e8e8e8;
+  --color-text-muted: #8899aa;
+  --color-text-bright: #ffffff;
+  --color-accent: #d4a634;
+  --color-accent-hover: #e6b83e;
+  --color-danger: #e74c3c;
+  --color-success: #2ecc71;
+  --color-warning: #f39c12;
+  --color-card-bg: #ffffff;
+  --color-card-border: #cccccc;
+  --color-card-back: #2c3e50;
+  --color-chip-white: #f0f0f0;
+  --color-chip-red: #e74c3c;
+  --color-chip-blue: #3498db;
+  --color-chip-green: #27ae60;
+  --color-chip-black: #2c3e50;
+  --color-glow-active: rgba(212, 166, 52, 0.6);
+  --color-glow-winner: rgba(46, 204, 113, 0.8);
+
+  --speed-slow: 1.5;
+  --speed-normal: 1;
+  --speed-fast: 0.5;
+  --speed-instant: 0;
+}
+
+[data-theme="casino-classic"] {
+  --color-felt: #256b35;
+  --color-felt-dark: #1a5028;
+  --color-felt-light: #3a8a4a;
+  --color-bg: #1a1a2e;
+  --color-bg-secondary: #16213e;
+  --color-bg-panel: #1f2f4a;
+  --color-table-border: #8B6914;
+}
+
+[data-theme="casino-blue"] {
+  --color-felt: #1a3a5c;
+  --color-felt-dark: #0f2540;
+  --color-felt-light: #2a5580;
+  --color-bg: #0a0a1a;
+  --color-bg-secondary: #0f1525;
+  --color-bg-panel: #152035;
+  --color-table-border: #4a7ab5;
+  --color-accent: #5dade2;
+  --color-accent-hover: #7ec8e3;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 3px;
+}
+
+/* Card flip animation */
+.card-container {
+  perspective: 800px;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 6px;
+}
+
+.card-front {
+  transform: rotateY(180deg);
+}
+
+/* Glow animation */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px var(--color-glow-active); }
+  50% { box-shadow: 0 0 25px var(--color-glow-active), 0 0 50px var(--color-glow-active); }
+}
+
+.active-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes winner-glow {
+  0%, 100% { box-shadow: 0 0 15px var(--color-glow-winner); }
+  50% { box-shadow: 0 0 35px var(--color-glow-winner), 0 0 60px var(--color-glow-winner); }
+}
+
+.winner-glow {
+  animation: winner-glow 1.5s ease-in-out infinite;
+}
+
+/* Chip animation */
+@keyframes chip-slide {
+  from { opacity: 0; transform: translateY(-20px) scale(0.8); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.chip-animate {
+  animation: chip-slide 0.3s ease-out;
+}
+
+/* Felt texture */
+.felt-texture {
+  background: var(--color-felt);
+  background-image:
+    radial-gradient(ellipse at center, var(--color-felt-light) 0%, var(--color-felt) 50%, var(--color-felt-dark) 100%);
+}
+
+/* Card deal animation */
+@keyframes card-deal {
+  from {
+    opacity: 0;
+    transform: translateY(-40px) rotate(-10deg) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+
+.card-deal-anim {
+  animation: card-deal 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Winner pop animation */
+@keyframes winner-pop {
+  0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+.animate-winner-pop {
+  animation: winner-pop 0.4s ease-out;
+}
+
+/* Training feedback animation */
+@keyframes feedback-in {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.animate-feedback-in {
+  animation: feedback-in 0.3s ease-out;
+}
+
+/* Chip slide to pot animation */
+@keyframes chip-to-pot {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-30px) scale(0.6); }
+}
+
+.chip-to-pot-anim {
+  animation: chip-to-pot 0.4s ease-in forwards;
+}
+
+/* Suit colors */
+.suit-red { color: #e74c3c; }
+.suit-black { color: #2c3e50; }
