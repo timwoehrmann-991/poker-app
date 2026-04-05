@@ -132,23 +132,43 @@ export const TrainingOverlay: React.FC = () => {
     ? (feedbackHistory.filter(f => f.isOptimal || f.rating === 'good').length / feedbackHistory.length * 100).toFixed(0)
     : null;
 
+  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth < 640;
+
+  // On mobile: toast slides in under the top bar (top: 44px) so it never
+  // covers the table or the action panel at the bottom.
+  // On desktop: keep it at bottom-right where it's unobtrusive.
+  const feedbackStyle: React.CSSProperties = isMobileScreen
+    ? {
+        position: 'fixed', top: 44, left: '50%', transform: 'translateX(-50%)',
+        zIndex: 60, width: 'calc(100vw - 32px)', maxWidth: 340,
+      }
+    : {
+        position: 'fixed', bottom: 90, right: 16, zIndex: 60,
+        minWidth: 200, maxWidth: 280,
+      };
+
+  const hintStyle: React.CSSProperties = isMobileScreen
+    ? {
+        position: 'fixed', top: 44, left: '50%', transform: 'translateX(-50%)',
+        zIndex: 59, width: 'calc(100vw - 32px)', maxWidth: 320,
+      }
+    : {
+        position: 'fixed', bottom: 90, right: 16, zIndex: 59, maxWidth: 260,
+      };
+
   return (
     <>
-      {/* ── All overlays use position:fixed so they sit in the viewport
-           bottom-right corner without ever blocking the table view ── */}
-
-      {/* Feedback toast — appears after human acts, bottom-right */}
+      {/* Feedback toast — top-center on mobile, bottom-right on desktop */}
       {showFeedback && feedback && (
         <div style={{
-          position: 'fixed', bottom: 90, right: 16, zIndex: 60,
+          ...feedbackStyle,
           background: 'rgba(8,8,16,0.94)', backdropFilter: 'blur(14px)',
           border: `1px solid ${getRatingColor(feedback.rating)}50`,
-          borderRadius: 14, padding: '10px 14px',
-          minWidth: 200, maxWidth: 280,
+          borderRadius: 14, padding: '8px 12px',
           boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${getRatingColor(feedback.rating)}20`,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 16 }}>{getRatingEmoji(feedback.rating)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+            <span style={{ fontSize: 15 }}>{getRatingEmoji(feedback.rating)}</span>
             <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: getRatingColor(feedback.rating) }}>
               {getRatingLabel(feedback.rating)}
             </span>
@@ -163,31 +183,30 @@ export const TrainingOverlay: React.FC = () => {
             </div>
           )}
           {feedback.reasoning && (
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 3 }}>
               {feedback.reasoning}
             </div>
           )}
         </div>
       )}
 
-      {/* Hint content — appears above toggle button */}
+      {/* Hint content — top-center on mobile, bottom-right on desktop */}
       {isHumanTurn && hint && showHint && (
         <div style={{
-          position: 'fixed', bottom: 90, right: 16, zIndex: 59,
+          ...hintStyle,
           background: 'rgba(8,8,16,0.94)', backdropFilter: 'blur(14px)',
           border: '1px solid rgba(155,89,182,0.45)',
-          borderRadius: 14, padding: '10px 14px',
-          maxWidth: 260,
+          borderRadius: 14, padding: '8px 12px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
         }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#bf5af2', letterSpacing: '0.06em', marginBottom: 5 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#bf5af2', letterSpacing: '0.06em', marginBottom: 4 }}>
             💡 GTO-Empfehlung
           </div>
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
             {formatActionLabel(hint.action)}{hint.amount > 0 ? ` €${hint.amount}` : ''}
           </div>
           {hint.reasoning && (
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 3 }}>
               {hint.reasoning}
             </div>
           )}

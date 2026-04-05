@@ -18,8 +18,9 @@ function computeLayout(vw: number, vh: number): TableLayout {
   }
 
   if (isPortrait) {
-    // Portrait phone — use a square oval so seats fit vertically
-    return { tableWidth: '90%', tableMaxWidth: 420, aspectRatio: '1/1', rx: 28, ry: 28, compact: true };
+    // Portrait phone — slightly smaller oval so seats have more room around it.
+    // rx:36 / ry:34 pulls seats outward without overflowing the 78% wide oval.
+    return { tableWidth: '78%', tableMaxWidth: 360, aspectRatio: '1/1', rx: 36, ry: 34, compact: true };
   }
 
   // Landscape phone — table must leave ~165 px for the action panel below.

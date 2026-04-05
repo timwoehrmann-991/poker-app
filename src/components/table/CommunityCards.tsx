@@ -5,11 +5,16 @@ import { CardComponent } from '../cards/CardComponent';
 interface CommunityCardsProps {
   cards: Card[];
   street: Street;
+  compact?: boolean;
 }
 
-export const CommunityCards: React.FC<CommunityCardsProps> = React.memo(({ cards, street }) => {
+export const CommunityCards: React.FC<CommunityCardsProps> = React.memo(({ cards, street, compact = false }) => {
+  const gap = compact ? 4 : 8;
+  const emptyW = compact ? 40 : 56;
+  const emptyH = compact ? 58 : 80;
+
   return (
-    <div className="flex gap-2 justify-center items-center">
+    <div style={{ display: 'flex', gap, justifyContent: 'center', alignItems: 'center' }}>
       {cards.map((card, i) => (
         <div
           key={card.id}
@@ -17,7 +22,7 @@ export const CommunityCards: React.FC<CommunityCardsProps> = React.memo(({ cards
             animation: `fadeSlideIn 0.4s ease-out ${i * 0.1}s both`,
           }}
         >
-          <CardComponent card={card} faceUp dealDelay={i * 100} />
+          <CardComponent card={card} faceUp small={compact} dealDelay={i * 100} />
         </div>
       ))}
       {/* Placeholder for remaining cards */}
@@ -25,7 +30,7 @@ export const CommunityCards: React.FC<CommunityCardsProps> = React.memo(({ cards
         <div
           key={`empty-${i}`}
           className="rounded-lg border border-dashed border-white/10"
-          style={{ width: 56, height: 80 }}
+          style={{ width: emptyW, height: emptyH }}
         />
       ))}
       <style>{`

@@ -130,20 +130,38 @@ const App: React.FC = () => {
           {mobilePanel && (
             <div style={{
               position: 'absolute', inset: 0, zIndex: 30,
-              background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(20px)',
+              background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(24px)',
               display: 'flex', flexDirection: 'column',
-              padding: 10, overflow: 'hidden',
+              overflow: 'hidden',
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                  {panels.find(p => p.id === mobilePanel)?.icon} {panels.find(p => p.id === mobilePanel)?.label}
+              {/* Header with title + close button */}
+              <div style={{
+                flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 12px',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.4)',
+              }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>
+                  {panels.find(p => p.id === mobilePanel)?.icon}&nbsp;&nbsp;{panels.find(p => p.id === mobilePanel)?.label}
                 </span>
+                {/* Large, clearly labelled close button */}
                 <button
                   onClick={() => setMobilePanel(null)}
-                  style={{ fontSize: 18, background: 'none', border: 'none', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', padding: '0 6px' }}
-                >✕</button>
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '6px 14px', borderRadius: 20,
+                    background: 'rgba(255,255,255,0.12)',
+                    border: '1px solid rgba(255,255,255,0.22)',
+                    color: '#fff', fontSize: 12, fontWeight: 700,
+                    cursor: 'pointer', touchAction: 'manipulation',
+                    letterSpacing: '0.03em',
+                  }}
+                >
+                  ✕ Schließen
+                </button>
               </div>
-              <div style={{ flex: 1, overflow: 'hidden auto' }}>
+              <div style={{ flex: 1, overflow: 'hidden auto', padding: '8px 10px' }}>
                 {mobilePanel === 'tutorial' && <TutorialPanel />}
                 {mobilePanel === 'chat'     && <StrategyChat />}
                 {mobilePanel === 'stats'    && <StatsPanel />}

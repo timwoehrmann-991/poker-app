@@ -171,7 +171,7 @@ export const PokerTable: React.FC = () => {
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)', zIndex: 10,
         }}>
-          <CommunityCards cards={gameState.communityCards} street={gameState.street} />
+          <CommunityCards cards={gameState.communityCards} street={gameState.street} compact={layout.compact} />
         </div>
 
         {/* Player seats */}

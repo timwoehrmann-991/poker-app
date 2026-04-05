@@ -5,6 +5,7 @@ interface CardComponentProps {
   card: Card | null;
   faceUp?: boolean;
   small?: boolean;
+  tiny?: boolean;       // extra-small for compact mobile seats (28×40)
   highlighted?: boolean;
   dealDelay?: number; // ms delay before deal animation starts
 }
@@ -20,10 +21,10 @@ function getSuitColor(suit: Suit): string {
 }
 
 export const CardComponent: React.FC<CardComponentProps> = React.memo(({
-  card, faceUp = true, small = false, highlighted = false, dealDelay,
+  card, faceUp = true, small = false, tiny = false, highlighted = false, dealDelay,
 }) => {
-  const width = small ? 40 : 56;
-  const height = small ? 58 : 80;
+  const width  = tiny ? 28 : small ? 40 : 56;
+  const height = tiny ? 40 : small ? 58 : 80;
   const prevFaceUpRef = useRef(faceUp);
   const [isFlipping, setIsFlipping] = useState(false);
 
@@ -87,13 +88,13 @@ export const CardComponent: React.FC<CardComponentProps> = React.memo(({
             <>
               {/* Top-left rank + suit */}
               <div className="absolute top-0.5 left-1 leading-none" style={{ color: getSuitColor(card.suit) }}>
-                <div style={{ fontSize: small ? 10 : 13, fontWeight: 700 }}>{RANK_DISPLAY[card.rank]}</div>
-                <div style={{ fontSize: small ? 8 : 10, marginTop: -2 }}>{SUIT_SYMBOLS[card.suit]}</div>
+                <div style={{ fontSize: tiny ? 8 : small ? 10 : 13, fontWeight: 700 }}>{RANK_DISPLAY[card.rank]}</div>
+                <div style={{ fontSize: tiny ? 6 : small ? 8 : 10, marginTop: -2 }}>{SUIT_SYMBOLS[card.suit]}</div>
               </div>
               {/* Center suit */}
               <div
                 className="absolute inset-0 flex items-center justify-center"
-                style={{ color: getSuitColor(card.suit), fontSize: small ? 18 : 26 }}
+                style={{ color: getSuitColor(card.suit), fontSize: tiny ? 12 : small ? 18 : 26 }}
               >
                 {SUIT_SYMBOLS[card.suit]}
               </div>
@@ -102,8 +103,8 @@ export const CardComponent: React.FC<CardComponentProps> = React.memo(({
                 className="absolute bottom-0.5 right-1 leading-none"
                 style={{ color: getSuitColor(card.suit), transform: 'rotate(180deg)' }}
               >
-                <div style={{ fontSize: small ? 10 : 13, fontWeight: 700 }}>{RANK_DISPLAY[card.rank]}</div>
-                <div style={{ fontSize: small ? 8 : 10, marginTop: -2 }}>{SUIT_SYMBOLS[card.suit]}</div>
+                <div style={{ fontSize: tiny ? 8 : small ? 10 : 13, fontWeight: 700 }}>{RANK_DISPLAY[card.rank]}</div>
+                <div style={{ fontSize: tiny ? 6 : small ? 8 : 10, marginTop: -2 }}>{SUIT_SYMBOLS[card.suit]}</div>
               </div>
             </>
           )}

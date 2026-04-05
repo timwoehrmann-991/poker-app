@@ -79,17 +79,20 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
       )}
 
       {/* Hole cards — on compact mode AI placeholder cards are hidden to save vertical space */}
-      <div style={{ display: 'flex', gap: 3, marginBottom: 3, minHeight: (isHuman || compact) ? 0 : 44 }}>
+      {/* Hole cards — tiny in compact mode to save space and avoid overlap */}
+      <div style={{ display: 'flex', gap: compact ? 2 : 3, marginBottom: 3, minHeight: compact ? 0 : 44 }}>
         {player.holeCards && !isFolded ? (
           <>
-            <CardComponent card={player.holeCards[0]} faceUp={showCards || isHuman} small dealDelay={0} />
-            <CardComponent card={player.holeCards[1]} faceUp={showCards || isHuman} small dealDelay={80} />
+            <CardComponent card={player.holeCards[0]} faceUp={showCards || isHuman} small={!compact} tiny={compact} dealDelay={0} />
+            <CardComponent card={player.holeCards[1]} faceUp={showCards || isHuman} small={!compact} tiny={compact} dealDelay={80} />
           </>
         ) : !isFolded && player.status !== PlayerStatus.Eliminated ? (
-          <>
-            <CardComponent card={null} faceUp={false} small dealDelay={0} />
-            <CardComponent card={null} faceUp={false} small dealDelay={80} />
-          </>
+          compact ? null : (
+            <>
+              <CardComponent card={null} faceUp={false} small dealDelay={0} />
+              <CardComponent card={null} faceUp={false} small dealDelay={80} />
+            </>
+          )
         ) : null}
       </div>
 
