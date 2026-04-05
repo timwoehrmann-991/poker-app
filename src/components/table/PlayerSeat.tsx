@@ -1,5 +1,5 @@
 import React from 'react';
-import { Player, PlayerStatus, Position, Card } from '../../engine/types';
+import { Player, PlayerStatus, Position } from '../../engine/types';
 import { CardComponent } from '../cards/CardComponent';
 
 interface PlayerSeatProps {
@@ -16,141 +16,186 @@ interface PlayerSeatProps {
 }
 
 const PERSONALITY_COLORS: Record<string, string> = {
-  rock: '#95a5a6',
-  callingStation: '#f39c12',
-  tag: '#3498db',
-  lagManiac: '#e74c3c',
-  gtoBalanced: '#9b59b6',
-  shortStack: '#e67e22',
-  nit: '#1abc9c',
+  rock:           '#8e8e93',
+  callingStation: '#ff9f0a',
+  tag:            '#0a84ff',
+  lagManiac:      '#ff453a',
+  gtoBalanced:    '#bf5af2',
+  shortStack:     '#ff9500',
+  nit:            '#30d158',
 };
 
 const PERSONALITY_EMOJIS: Record<string, string> = {
-  rock: '🪨',
-  callingStation: '📞',
-  tag: '🦈',
-  lagManiac: '🃏',
-  gtoBalanced: '⚖️',
-  shortStack: '📊',
-  nit: '🔒',
+  rock: '🪨', callingStation: '📞', tag: '🦈',
+  lagManiac: '🃏', gtoBalanced: '⚖️', shortStack: '📊', nit: '🔒',
 };
 
 export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
   player, position, isActive, isDealer, isWinner, isHuman, showCards, winAmount,
   timerProgress, timerWarning,
 }) => {
-  const isFolded = player.status === PlayerStatus.Folded;
-  const isAllIn = player.status === PlayerStatus.AllIn;
-  const isEliminated = player.status === PlayerStatus.Eliminated;
+  const isFolded      = player.status === PlayerStatus.Folded;
+  const isAllIn       = player.status === PlayerStatus.AllIn;
+  const isEliminated  = player.status === PlayerStatus.Eliminated;
 
   if (isEliminated) return null;
 
-  const borderColor = isActive ? 'var(--color-accent)' : isWinner ? '#2ecc71' : 'rgba(255,255,255,0.15)';
-  const bgOpacity = isFolded ? 0.4 : 1;
-  const personalityColor = player.aiPersonality ? PERSONALITY_COLORS[player.aiPersonality] || '#666' : '#3498db';
+  const personalityColor = player.aiPersonality ? (PERSONALITY_COLORS[player.aiPersonality] || '#8e8e93') : '#0a84ff';
+
+  let borderColor = 'rgba(255,255,255,0.12)';
+  if (isActive)  borderColor = 'rgba(10,132,255,0.8)';
+  if (isWinner)  borderColor = 'rgba(48,209,88,0.8)';
+
+  const glowClass = isActive ? 'active-glow' : isWinner ? 'winner-glow' : '';
 
   return (
     <div
-      className={`relative flex flex-col items-center ${isActive ? 'active-glow' : ''} ${isWinner ? 'winner-glow' : ''}`}
-      style={{ opacity: bgOpacity, transition: 'opacity 0.3s' }}
+      className={glowClass}
+      style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        opacity: isFolded ? 0.4 : 1,
+        transition: 'opacity 0.3s',
+        filter: isFolded ? 'grayscale(0.5)' : 'none',
+      }}
     >
-      {/* Dealer Button */}
+      {/* Dealer button */}
       {isDealer && (
-        <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-white text-black text-xs font-bold flex items-center justify-center shadow-lg z-10 border-2 border-yellow-500">
-          D
-        </div>
+        <div style={{
+          position: 'absolute', top: -8, right: -8,
+          width: 20, height: 20, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #fff 0%, #e8e8e8 100%)',
+          color: '#000', fontSize: 9, fontWeight: 800,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: '2px solid var(--color-accent)',
+          boxShadow: '0 2px 8px rgba(212,166,52,0.5)',
+          zIndex: 5,
+        }}>D</div>
       )}
 
-      {/* Hole Cards */}
-      <div className="flex gap-0.5 mb-1" style={{ minHeight: 58 }}>
+      {/* Hole cards */}
+      <div style={{ display: 'flex', gap: 3, marginBottom: 4, minHeight: isHuman ? 0 : 50 }}>
         {player.holeCards && !isFolded ? (
           <>
-            <CardComponent
-              card={player.holeCards[0]}
-              faceUp={showCards || isHuman}
-              small
-              dealDelay={0}
-            />
-            <CardComponent
-              card={player.holeCards[1]}
-              faceUp={showCards || isHuman}
-              small
-              dealDelay={100}
-            />
+            <CardComponent card={player.holeCards[0]} faceUp={showCards || isHuman} small dealDelay={0} />
+            <CardComponent card={player.holeCards[1]} faceUp={showCards || isHuman} small dealDelay={80} />
           </>
         ) : !isFolded && player.status !== PlayerStatus.Eliminated ? (
           <>
             <CardComponent card={null} faceUp={false} small dealDelay={0} />
-            <CardComponent card={null} faceUp={false} small dealDelay={100} />
+            <CardComponent card={null} faceUp={false} small dealDelay={80} />
           </>
         ) : null}
       </div>
 
-      {/* Player info box */}
-      <div
-        className="rounded-lg px-3 py-1.5 min-w-[100px] text-center relative"
-        style={{
-          background: 'var(--color-bg-panel)',
-          border: `2px solid ${borderColor}`,
-          transition: 'border-color 0.3s',
-        }}
-      >
-        {/* Timer progress bar */}
+      {/* Info box */}
+      <div style={{
+        background: 'rgba(12,12,20,0.88)',
+        backdropFilter: 'blur(16px)',
+        border: `1.5px solid ${borderColor}`,
+        borderRadius: 10,
+        padding: '6px 10px',
+        minWidth: 90,
+        textAlign: 'center',
+        position: 'relative',
+        transition: 'border-color 0.25s',
+        overflow: 'hidden',
+      }}>
+        {/* Timer bar */}
         {timerProgress !== undefined && (
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-b-lg overflow-hidden">
-            <div
-              className="h-full transition-all"
-              style={{
-                width: `${timerProgress * 100}%`,
-                background: timerWarning ? '#e74c3c' : timerProgress > 0.5 ? '#2ecc71' : '#f39c12',
-                transition: 'width 0.1s linear',
-                boxShadow: timerWarning ? '0 0 6px #e74c3c' : 'none',
-              }}
-            />
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
+            background: 'rgba(255,255,255,0.1)',
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${timerProgress * 100}%`,
+              background: timerWarning
+                ? 'var(--color-danger)'
+                : timerProgress > 0.5
+                  ? 'var(--color-success)'
+                  : 'var(--color-warning)',
+              transition: 'width 0.1s linear',
+              boxShadow: timerWarning ? '0 0 6px var(--color-danger)' : 'none',
+            }} />
           </div>
         )}
-        {/* Personality indicator */}
+
+        {/* Personality badge */}
         {player.aiPersonality && (
-          <div
-            className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] px-1.5 rounded-full font-bold"
-            style={{ background: personalityColor, color: '#fff' }}
-          >
+          <div style={{
+            position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
+            background: personalityColor, borderRadius: 8,
+            fontSize: 10, padding: '1px 6px',
+            boxShadow: `0 2px 8px ${personalityColor}60`,
+          }}>
             {PERSONALITY_EMOJIS[player.aiPersonality] || '🤖'}
           </div>
         )}
 
+        {/* Human indicator */}
+        {isHuman && (
+          <div style={{
+            position: 'absolute', top: -7, left: '50%', transform: 'translateX(-50%)',
+            background: 'var(--color-primary)', borderRadius: 8,
+            fontSize: 9, fontWeight: 700, padding: '1px 7px', color: '#fff',
+            boxShadow: '0 2px 8px rgba(10,132,255,0.4)',
+          }}>YOU</div>
+        )}
+
         {/* Name */}
-        <div className="text-xs font-semibold text-white truncate max-w-[90px]">
-          {isHuman ? '👤 ' : ''}{player.name}
+        <div style={{
+          fontSize: 11, fontWeight: 600, color: '#fff',
+          marginTop: player.aiPersonality || isHuman ? 6 : 0,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          maxWidth: 80,
+        }}>
+          {player.name}
         </div>
 
-        {/* Chips */}
-        <div className="text-sm font-bold" style={{ color: 'var(--color-accent)' }}>
+        {/* Stack */}
+        <div style={{
+          fontSize: 13, fontWeight: 700, color: 'var(--color-accent)',
+          fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em',
+        }}>
           €{player.chips.toLocaleString()}
         </div>
 
         {/* Position */}
         {position && (
-          <div className="text-[9px] text-gray-400 font-medium">
+          <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', fontWeight: 700, letterSpacing: '0.08em', marginTop: 1 }}>
             {position}
           </div>
         )}
 
         {/* Status badges */}
         {isAllIn && (
-          <div className="text-[10px] font-bold text-red-400 bg-red-900/50 rounded px-1 mt-0.5">
+          <div style={{
+            fontSize: 9, fontWeight: 800, color: 'var(--color-danger)',
+            background: 'rgba(255,69,58,0.15)', borderRadius: 5,
+            padding: '1px 5px', marginTop: 2, letterSpacing: '0.04em',
+          }}>
             ALL-IN
           </div>
         )}
         {isFolded && (
-          <div className="text-[10px] text-gray-500 mt-0.5">FOLD</div>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 2, letterSpacing: '0.04em' }}>
+            FOLD
+          </div>
         )}
       </div>
 
-      {/* Current bet */}
+      {/* Current bet chip */}
       {player.currentBet > 0 && (
-        <div className="mt-1 chip-animate">
-          <div className="bg-yellow-600/80 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">
+        <div className="chip-animate" style={{ marginTop: 4 }}>
+          <div style={{
+            background: 'rgba(212,166,52,0.2)', border: '1px solid rgba(212,166,52,0.4)',
+            borderRadius: 12, padding: '2px 8px',
+            fontSize: 10, fontWeight: 700, color: 'var(--color-accent)',
+            fontVariantNumeric: 'tabular-nums',
+          }}>
             €{player.currentBet}
           </div>
         </div>
@@ -158,7 +203,13 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
 
       {/* Win amount */}
       {isWinner && winAmount && winAmount > 0 && (
-        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-green-400 font-bold text-sm animate-bounce">
+        <div style={{
+          position: 'absolute', bottom: -22, left: '50%', transform: 'translateX(-50%)',
+          fontSize: 12, fontWeight: 700, color: 'var(--color-success)',
+          animation: 'chip-slide-in 0.3s ease-out',
+          whiteSpace: 'nowrap',
+          textShadow: '0 0 10px rgba(48,209,88,0.5)',
+        }}>
           +€{winAmount}
         </div>
       )}

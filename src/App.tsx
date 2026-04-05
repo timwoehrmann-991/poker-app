@@ -14,118 +14,130 @@ type RightPanel = 'tutorial' | 'history' | 'chat' | 'stats' | null;
 
 const App: React.FC = () => {
   const isGameStarted = useGameStore(s => s.isGameStarted);
-  const colorScheme = useSettingsStore(s => s.colorScheme);
-  const showOdds = useSettingsStore(s => s.showOddsCalculator);
+  const colorScheme   = useSettingsStore(s => s.colorScheme);
+  const showOdds      = useSettingsStore(s => s.showOddsCalculator);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [rightPanel, setRightPanel] = useState<RightPanel>('tutorial');
+  const [rightPanel, setRightPanel]     = useState<RightPanel>('tutorial');
 
-  // Apply theme on mount
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorScheme);
   }, [colorScheme]);
 
-  if (!isGameStarted) {
-    return <GameSetup />;
-  }
+  if (!isGameStarted) return <GameSetup />;
 
-  const panelButtons: { id: RightPanel; label: string }[] = [
-    { id: 'tutorial', label: '📖 Tutorial' },
-    { id: 'chat', label: '💬 Chat' },
-    { id: 'stats', label: '📈 Stats' },
-    { id: 'history', label: '📋 History' },
+  const panels: { id: RightPanel; icon: string; label: string }[] = [
+    { id: 'tutorial', icon: '📖', label: 'Tutorial' },
+    { id: 'chat',     icon: '💬', label: 'Chat' },
+    { id: 'stats',    icon: '📈', label: 'Stats' },
+    { id: 'history',  icon: '📋', label: 'History' },
   ];
 
   return (
-    <div
-      className="w-screen h-screen flex flex-col overflow-hidden"
-      style={{ background: 'var(--color-bg)' }}
-    >
-      {/* Top bar */}
-      <div
-        className="h-10 flex items-center justify-between px-4 border-b flex-shrink-0"
-        style={{
-          background: 'var(--color-bg-secondary)',
-          borderColor: 'rgba(255,255,255,0.08)',
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-bold text-white">♠ Poker</span>
-          {panelButtons.map(btn => (
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--color-bg)' }}>
+
+      {/* ── Top bar ───────────────────────────────────────── */}
+      <div style={{
+        height: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 14px', flexShrink: 0,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(24px)',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+      }}>
+        {/* Left: brand + panel tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>
+            ♠ Poker
+          </span>
+          <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.12)' }} />
+          {panels.map(p => (
             <button
-              key={btn.id}
-              onClick={() => setRightPanel(rightPanel === btn.id ? null : btn.id)}
-              className={`text-xs px-2 py-1 rounded transition-colors ${
-                rightPanel === btn.id
-                  ? 'bg-yellow-600/30 text-yellow-400'
-                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
-              }`}
+              key={p.id}
+              onClick={() => setRightPanel(rightPanel === p.id ? null : p.id)}
+              style={{
+                padding: '3px 10px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+                border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+                background: rightPanel === p.id ? 'rgba(212,166,52,0.18)' : 'transparent',
+                color: rightPanel === p.id ? 'var(--color-accent)' : 'rgba(255,255,255,0.4)',
+              }}
             >
-              {btn.label}
+              {p.icon} {p.label}
             </button>
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Right: odds toggle + settings + exit */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             onClick={() => useSettingsStore.getState().setShowOddsCalculator(!showOdds)}
-            className={`text-xs px-2 py-1 rounded transition-colors ${
-              showOdds
-                ? 'bg-green-600/30 text-green-400'
-                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
-            }`}
+            style={{
+              padding: '3px 10px', borderRadius: 7, fontSize: 11, fontWeight: 600,
+              border: '1px solid ' + (showOdds ? 'rgba(48,209,88,0.4)' : 'rgba(255,255,255,0.1)'),
+              background: showOdds ? 'rgba(48,209,88,0.12)' : 'transparent',
+              color: showOdds ? 'var(--color-success)' : 'rgba(255,255,255,0.4)',
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
           >
             📊 Odds
           </button>
           <button
             onClick={() => setSettingsOpen(true)}
-            className="text-gray-400 hover:text-white transition-colors text-sm"
+            style={{
+              padding: '3px 9px', borderRadius: 7, fontSize: 13,
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.5)', cursor: 'pointer', transition: 'all 0.15s',
+            }}
           >
             ⚙️
           </button>
           <button
-            onClick={() => {
-              if (confirm('Zurück zum Hauptmenü?')) {
-                useGameStore.setState({
-                  isGameStarted: false,
-                  gameState: null,
-                  controller: null,
-                });
-              }
+            onClick={() => { if (confirm('Zurück zum Hauptmenü?')) useGameStore.setState({ isGameStarted: false, gameState: null, controller: null }); }}
+            style={{
+              padding: '3px 9px', borderRadius: 7, fontSize: 11,
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'all 0.15s',
             }}
-            className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
           >
-            🚪 Menü
+            ✕ Menü
           </button>
         </div>
       </div>
 
-      {/* Main content area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left sidebar - Odds Calculator */}
+      {/* ── Main layout ───────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+        {/* Left: Odds sidebar */}
         {showOdds && (
-          <div className="w-56 p-2 flex-shrink-0 overflow-y-auto border-r" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+          <div style={{
+            width: 220, flexShrink: 0, overflow: 'hidden auto',
+            borderRight: '1px solid rgba(255,255,255,0.05)',
+            background: 'rgba(0,0,0,0.25)',
+            padding: 8,
+          }}>
             <OddsPanel />
           </div>
         )}
 
-        {/* Center - Poker table */}
-        <div className="flex-1 p-2 overflow-hidden">
+        {/* Center: Poker table */}
+        <div style={{ flex: 1, overflow: 'hidden', padding: 6 }}>
           <PokerTable />
         </div>
 
-        {/* Right sidebar */}
+        {/* Right: Panel */}
         {rightPanel && (
-          <div className="w-72 p-2 flex-shrink-0 overflow-y-auto border-l" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+          <div style={{
+            width: 280, flexShrink: 0, overflow: 'hidden auto',
+            borderLeft: '1px solid rgba(255,255,255,0.05)',
+            background: 'rgba(0,0,0,0.25)',
+            padding: 8,
+          }}>
             {rightPanel === 'tutorial' && <TutorialPanel />}
-            {rightPanel === 'chat' && <StrategyChat />}
-            {rightPanel === 'stats' && <StatsPanel />}
-            {rightPanel === 'history' && <HandHistoryPanel />}
+            {rightPanel === 'chat'     && <StrategyChat />}
+            {rightPanel === 'stats'    && <StatsPanel />}
+            {rightPanel === 'history'  && <HandHistoryPanel />}
           </div>
         )}
       </div>
 
-      {/* Settings modal */}
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );

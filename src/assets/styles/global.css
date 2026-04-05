@@ -1,61 +1,89 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════
+   Apple Vision Pro 2030 Design System
+   ═══════════════════════════════════════════════════════════════ */
+
 :root {
-  /* Casino Dark Theme (default) */
-  --color-felt: #1a5c2a;
-  --color-felt-dark: #0f3d1a;
-  --color-felt-light: #2d7a3f;
+  /* === Background Layers === */
+  --color-bg: #000000;
+  --color-bg-deep: #05050a;
+  --color-bg-secondary: #0d0d14;
+  --color-bg-panel: rgba(18, 18, 28, 0.9);
+  --color-bg-elevated: rgba(28, 28, 42, 0.95);
+
+  /* === Glassmorphism === */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-hover: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-border-bright: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.7);
+  --glass-inset: inset 0 1px 1px rgba(255, 255, 255, 0.07);
+
+  /* === Table === */
+  --color-felt: #0c3320;
+  --color-felt-dark: #061910;
+  --color-felt-light: #154d2e;
   --color-table-border: #8B6914;
-  --color-table-border-inner: #a67c1a;
-  --color-bg: #0a0e14;
-  --color-bg-secondary: #141b24;
-  --color-bg-panel: #1a2332;
-  --color-text: #e8e8e8;
-  --color-text-muted: #8899aa;
-  --color-text-bright: #ffffff;
+  --color-table-border-inner: #6b4a10;
+
+  /* === Apple Accent Colors === */
   --color-accent: #d4a634;
   --color-accent-hover: #e6b83e;
-  --color-danger: #e74c3c;
-  --color-success: #2ecc71;
-  --color-warning: #f39c12;
-  --color-card-bg: #ffffff;
-  --color-card-border: #cccccc;
-  --color-card-back: #2c3e50;
-  --color-chip-white: #f0f0f0;
-  --color-chip-red: #e74c3c;
-  --color-chip-blue: #3498db;
-  --color-chip-green: #27ae60;
-  --color-chip-black: #2c3e50;
-  --color-glow-active: rgba(212, 166, 52, 0.6);
-  --color-glow-winner: rgba(46, 204, 113, 0.8);
+  --color-primary: #0a84ff;
+  --color-primary-glow: rgba(10, 132, 255, 0.35);
+  --color-success: #30d158;
+  --color-success-glow: rgba(48, 209, 88, 0.35);
+  --color-danger: #ff453a;
+  --color-danger-glow: rgba(255, 69, 58, 0.35);
+  --color-warning: #ff9f0a;
+  --color-warning-glow: rgba(255, 159, 10, 0.35);
+  --color-purple: #bf5af2;
 
-  --speed-slow: 1.5;
-  --speed-normal: 1;
-  --speed-fast: 0.5;
-  --speed-instant: 0;
+  /* === Text === */
+  --color-text: #e5e5ea;
+  --color-text-muted: #8e8e93;
+  --color-text-bright: #ffffff;
+
+  /* === Cards === */
+  --color-card-bg: #ffffff;
+  --color-card-border: rgba(0, 0, 0, 0.1);
+  --color-card-red: #ff3b30;
+  --color-card-black: #1c1c1e;
+
+  /* === Glow Effects === */
+  --color-glow-active: rgba(10, 132, 255, 0.5);
+  --color-glow-winner: rgba(48, 209, 88, 0.7);
 }
 
+/* ── Theme Variants ─────────────────────────────────────────── */
 [data-theme="casino-classic"] {
-  --color-felt: #256b35;
-  --color-felt-dark: #1a5028;
-  --color-felt-light: #3a8a4a;
-  --color-bg: #1a1a2e;
-  --color-bg-secondary: #16213e;
-  --color-bg-panel: #1f2f4a;
-  --color-table-border: #8B6914;
+  --color-felt: #1a5a30;
+  --color-felt-dark: #0f3d1a;
+  --color-felt-light: #2a7a40;
+  --color-bg: #0e0a18;
+  --color-bg-secondary: #130f1e;
+  --color-bg-panel: rgba(22, 16, 35, 0.9);
+  --color-accent: #c9a227;
+  --color-table-border: #6b4a10;
 }
 
 [data-theme="casino-blue"] {
-  --color-felt: #1a3a5c;
-  --color-felt-dark: #0f2540;
-  --color-felt-light: #2a5580;
-  --color-bg: #0a0a1a;
-  --color-bg-secondary: #0f1525;
-  --color-bg-panel: #152035;
-  --color-table-border: #4a7ab5;
-  --color-accent: #5dade2;
-  --color-accent-hover: #7ec8e3;
+  --color-felt: #0d2a4a;
+  --color-felt-dark: #071825;
+  --color-felt-light: #163d6a;
+  --color-bg: #020810;
+  --color-bg-secondary: #060d18;
+  --color-bg-panel: rgba(8, 14, 28, 0.9);
+  --color-accent: #4facff;
+  --color-primary: #4facff;
+  --color-table-border: #1a3a5c;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Base Reset
+   ═══════════════════════════════════════════════════════════════ */
 
 * {
   margin: 0;
@@ -67,7 +95,9 @@ html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -75,130 +105,174 @@ body {
   color: var(--color-text);
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-}
+/* ═══════════════════════════════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-text-muted);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Card flip animation */
-.card-container {
-  perspective: 800px;
+/* ═══════════════════════════════════════════════════════════════
+   Glassmorphism Utility Classes
+   ═══════════════════════════════════════════════════════════════ */
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-inset);
 }
 
-.card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
+.glass-panel-solid {
+  background: var(--color-bg-panel);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-lg), var(--glass-inset);
 }
 
-.card-inner.flipped {
-  transform: rotateY(180deg);
-}
+/* ═══════════════════════════════════════════════════════════════
+   Table Felt
+   ═══════════════════════════════════════════════════════════════ */
 
-.card-front, .card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  border-radius: 6px;
-}
-
-.card-front {
-  transform: rotateY(180deg);
-}
-
-/* Glow animation */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 10px var(--color-glow-active); }
-  50% { box-shadow: 0 0 25px var(--color-glow-active), 0 0 50px var(--color-glow-active); }
-}
-
-.active-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-@keyframes winner-glow {
-  0%, 100% { box-shadow: 0 0 15px var(--color-glow-winner); }
-  50% { box-shadow: 0 0 35px var(--color-glow-winner), 0 0 60px var(--color-glow-winner); }
-}
-
-.winner-glow {
-  animation: winner-glow 1.5s ease-in-out infinite;
-}
-
-/* Chip animation */
-@keyframes chip-slide {
-  from { opacity: 0; transform: translateY(-20px) scale(0.8); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.chip-animate {
-  animation: chip-slide 0.3s ease-out;
-}
-
-/* Felt texture */
 .felt-texture {
   background: var(--color-felt);
   background-image:
-    radial-gradient(ellipse at center, var(--color-felt-light) 0%, var(--color-felt) 50%, var(--color-felt-dark) 100%);
+    radial-gradient(
+      ellipse 110% 90% at 50% 40%,
+      var(--color-felt-light) 0%,
+      var(--color-felt) 45%,
+      var(--color-felt-dark) 100%
+    );
 }
 
-/* Card deal animation */
+/* ═══════════════════════════════════════════════════════════════
+   Card Animations
+   ═══════════════════════════════════════════════════════════════ */
+
 @keyframes card-deal {
   from {
     opacity: 0;
-    transform: translateY(-40px) rotate(-10deg) scale(0.5);
+    transform: translateY(-50px) scale(0.6) rotate(-8deg);
   }
   to {
     opacity: 1;
-    transform: translateY(0) rotate(0) scale(1);
+    transform: translateY(0) scale(1) rotate(0deg);
   }
 }
 
 .card-deal-anim {
-  animation: card-deal 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: card-deal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Winner pop animation */
+/* ═══════════════════════════════════════════════════════════════
+   Glow Animations
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes pulse-glow-blue {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(10, 132, 255, 0.4),
+      0 0 15px rgba(10, 132, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1.5px rgba(10, 132, 255, 0.7),
+      0 0 30px rgba(10, 132, 255, 0.45),
+      0 0 60px rgba(10, 132, 255, 0.12);
+  }
+}
+
+@keyframes pulse-glow-green {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(48, 209, 88, 0.5),
+      0 0 20px rgba(48, 209, 88, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(48, 209, 88, 0.8),
+      0 0 40px rgba(48, 209, 88, 0.5),
+      0 0 80px rgba(48, 209, 88, 0.15);
+  }
+}
+
+.active-glow {
+  animation: pulse-glow-blue 2s ease-in-out infinite;
+}
+
+.winner-glow {
+  animation: pulse-glow-green 1.5s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Chip & UI Animations
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes chip-slide-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.75); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.chip-animate {
+  animation: chip-slide-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 @keyframes winner-pop {
-  0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
-  50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+  0%   { opacity: 0; transform: translateX(-50%) scale(0.5); }
+  60%  { opacity: 1; transform: translateX(-50%) scale(1.08); }
   100% { opacity: 1; transform: translateX(-50%) scale(1); }
 }
 
 .animate-winner-pop {
-  animation: winner-pop 0.4s ease-out;
+  animation: winner-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Training feedback animation */
 @keyframes feedback-in {
-  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-  100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .animate-feedback-in {
   animation: feedback-in 0.3s ease-out;
 }
 
-/* Chip slide to pot animation */
-@keyframes chip-to-pot {
-  0% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-30px) scale(0.6); }
+/* ═══════════════════════════════════════════════════════════════
+   Gradient Animation
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-.chip-to-pot-anim {
-  animation: chip-to-pot 0.4s ease-in forwards;
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
 }
 
-/* Suit colors */
-.suit-red { color: #e74c3c; }
-.suit-black { color: #2c3e50; }
+/* ═══════════════════════════════════════════════════════════════
+   Suit Colors
+   ═══════════════════════════════════════════════════════════════ */
+.suit-red   { color: var(--color-card-red); }
+.suit-black { color: var(--color-card-black); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Spatial Ambient Background (for setup / modal screens)
+   ═══════════════════════════════════════════════════════════════ */
+
+.spatial-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 20%, rgba(10, 132, 255, 0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 80%, rgba(191, 90, 242, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 120% 80% at 50% 50%, rgba(20, 20, 35, 0.6) 0%, transparent 100%),
+    var(--color-bg);
+}

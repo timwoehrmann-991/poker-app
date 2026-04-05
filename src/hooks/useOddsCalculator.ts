@@ -55,7 +55,7 @@ export function useOddsCalculator(
         holeCards,
         communityCards,
         numOpponents: Math.max(1, numOpponents),
-        iterations: 10000,
+        iterations: 50000,
       });
     }, 200);
 
