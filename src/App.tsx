@@ -13,14 +13,14 @@ import { RecentHandsBar } from './components/ui/RecentHandsBar';
 
 type RightPanel = 'tutorial' | 'history' | 'chat' | 'stats' | null;
 
-function useWindowWidth() {
-  const [width, setWidth] = useState(window.innerWidth);
+function useWindowSize() {
+  const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight });
   useEffect(() => {
-    const handler = () => setWidth(window.innerWidth);
+    const handler = () => setSize({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
-  return width;
+  return size;
 }
 
 const App: React.FC = () => {
@@ -33,9 +33,10 @@ const App: React.FC = () => {
   const [rightPanel, setRightPanel]     = useState<RightPanel>('tutorial');
   const [mobilePanel, setMobilePanel]   = useState<RightPanel>(null);
 
-  const windowWidth = useWindowWidth();
+  const { w: windowWidth, h: windowHeight } = useWindowSize();
   const isMobile    = windowWidth < 640;
   const isTablet    = windowWidth >= 640 && windowWidth < 1024;
+  const isLandscape = windowWidth > windowHeight;
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorScheme);
@@ -60,49 +61,64 @@ const App: React.FC = () => {
 
   // ─── MOBILE LAYOUT ────────────────────────────────────────────────────────
   if (isMobile) {
+    const mobileIsLandscape = isLandscape;
+    const btnStyle = (active: boolean): React.CSSProperties => ({
+      padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+      border: '1px solid ' + (active ? 'rgba(212,166,52,0.4)' : 'rgba(255,255,255,0.12)'),
+      background: active ? 'rgba(212,166,52,0.12)' : 'transparent',
+      color: active ? 'var(--color-accent)' : 'rgba(255,255,255,0.45)',
+      cursor: 'pointer', touchAction: 'manipulation',
+    });
+
     return (
       <div style={{ width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)', overflow: 'hidden' }}>
 
-        {/* Top bar — minimal on mobile */}
+        {/* Top bar — in landscape, panel buttons live here to save vertical space */}
         <div style={{
-          height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 10px', flexShrink: 0,
-          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(20px)',
+          height: 40, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 8px',
+          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.07)',
         }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>♠ Poker</span>
-          <div style={{ display: 'flex', gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>♠ Poker</span>
+
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            {/* Panel buttons — always visible in landscape, hidden in portrait (use bottom nav) */}
+            {mobileIsLandscape && panels.map(p => (
+              <button
+                key={p.id}
+                onClick={() => setMobilePanel(mobilePanel === p.id ? null : p.id)}
+                style={btnStyle(mobilePanel === p.id)}
+              >{p.icon}</button>
+            ))}
+
             <button
               onClick={() => useSettingsStore.getState().setShowOddsCalculator(!showOdds)}
-              style={{
-                padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                border: '1px solid ' + (showOdds ? 'rgba(48,209,88,0.4)' : 'rgba(255,255,255,0.12)'),
-                background: showOdds ? 'rgba(48,209,88,0.12)' : 'transparent',
-                color: showOdds ? '#30d158' : 'rgba(255,255,255,0.5)',
-                cursor: 'pointer',
-              }}
+              style={btnStyle(showOdds)}
             >📊</button>
             <button
               onClick={() => setSettingsOpen(true)}
-              style={{ padding: '3px 8px', borderRadius: 6, fontSize: 13, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}
+              style={{ padding: '3px 8px', borderRadius: 6, fontSize: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', cursor: 'pointer', touchAction: 'manipulation' }}
             >⚙️</button>
             <button
               onClick={() => { if (confirm('Zurück zum Hauptmenü?')) useGameStore.setState({ isGameStarted: false, gameState: null, controller: null }); }}
-              style={{ padding: '3px 7px', borderRadius: 6, fontSize: 11, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}
+              style={{ padding: '3px 7px', borderRadius: 6, fontSize: 11, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', touchAction: 'manipulation' }}
             >✕</button>
           </div>
         </div>
 
-        {/* Table — takes all remaining space above bottom nav */}
+        {/* Table — fills all space between top bar and (portrait) bottom nav */}
         <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-          {/* Odds panel — overlay on top of table if enabled */}
+          {/* Odds panel overlay */}
           {showOdds && (
             <div style={{
-              position: 'absolute', top: 6, left: 6, zIndex: 20,
-              width: 180, maxHeight: 'calc(100% - 12px)', overflow: 'hidden auto',
-              background: 'rgba(8,8,14,0.9)', backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12,
-              padding: 8,
+              position: 'absolute', top: 4, left: 4, zIndex: 20,
+              width: mobileIsLandscape ? 150 : 170,
+              maxHeight: 'calc(100% - 8px)', overflow: 'hidden auto',
+              background: 'rgba(8,8,14,0.92)', backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10,
+              padding: 6,
             }}>
               <OddsPanel />
             </div>
@@ -110,21 +126,21 @@ const App: React.FC = () => {
 
           <PokerTable />
 
-          {/* Mobile panel overlay */}
+          {/* Panel overlay (full-screen modal over the table) */}
           {mobilePanel && (
             <div style={{
               position: 'absolute', inset: 0, zIndex: 30,
-              background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(20px)',
+              background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(20px)',
               display: 'flex', flexDirection: 'column',
-              padding: 12, overflow: 'hidden',
+              padding: 10, overflow: 'hidden',
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
                   {panels.find(p => p.id === mobilePanel)?.icon} {panels.find(p => p.id === mobilePanel)?.label}
                 </span>
                 <button
                   onClick={() => setMobilePanel(null)}
-                  style={{ fontSize: 18, background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '0 6px' }}
+                  style={{ fontSize: 18, background: 'none', border: 'none', color: 'rgba(255,255,255,0.55)', cursor: 'pointer', padding: '0 6px' }}
                 >✕</button>
               </div>
               <div style={{ flex: 1, overflow: 'hidden auto' }}>
@@ -137,47 +153,51 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* Bottom nav */}
-        <div style={{
-          flexShrink: 0,
-          display: 'flex', alignItems: 'center',
-          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(255,255,255,0.07)',
-          padding: '0 4px',
-          height: 50,
-        }}>
-          {panels.map(p => (
-            <button
-              key={p.id}
-              onClick={() => setMobilePanel(mobilePanel === p.id ? null : p.id)}
-              style={{
-                flex: 1, height: '100%',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                color: mobilePanel === p.id ? 'var(--color-accent)' : 'rgba(255,255,255,0.4)',
-                borderTop: mobilePanel === p.id ? '2px solid var(--color-accent)' : '2px solid transparent',
-                transition: 'all 0.15s',
-              }}
-            >
-              <span style={{ fontSize: 18 }}>{p.icon}</span>
-              <span style={{ fontSize: 9, fontWeight: 600 }}>{p.label}</span>
-            </button>
-          ))}
-        </div>
+        {/* Bottom nav — portrait only; in landscape the top bar has the buttons */}
+        {!mobileIsLandscape && (
+          <div style={{
+            flexShrink: 0,
+            display: 'flex', alignItems: 'center',
+            background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(20px)',
+            borderTop: '1px solid rgba(255,255,255,0.07)',
+            padding: '0 2px',
+            height: 50,
+          }}>
+            {panels.map(p => (
+              <button
+                key={p.id}
+                onClick={() => setMobilePanel(mobilePanel === p.id ? null : p.id)}
+                style={{
+                  flex: 1, height: '100%',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+                  background: 'transparent', border: 'none', cursor: 'pointer', touchAction: 'manipulation',
+                  color: mobilePanel === p.id ? 'var(--color-accent)' : 'rgba(255,255,255,0.4)',
+                  borderTop: mobilePanel === p.id ? '2px solid var(--color-accent)' : '2px solid transparent',
+                  transition: 'color 0.15s',
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{p.icon}</span>
+                <span style={{ fontSize: 9, fontWeight: 600 }}>{p.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Skip button */}
+        {/* Skip button — position above bottom nav in portrait, near bottom in landscape */}
         {isAITurn && (
           <button
             onClick={() => useGameStore.getState().forceAITurn()}
             style={{
-              position: 'fixed', bottom: 62, right: 14, zIndex: 50,
-              width: 44, height: 44, borderRadius: '50%',
+              position: 'fixed',
+              bottom: mobileIsLandscape ? 8 : 60,
+              right: 10,
+              zIndex: 50,
+              width: 42, height: 42, borderRadius: '50%',
               background: 'rgba(255,159,10,0.92)', backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255,159,10,0.6)',
-              color: '#fff', fontSize: 18, cursor: 'pointer',
+              color: '#fff', fontSize: 17, cursor: 'pointer', touchAction: 'manipulation',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: '0 4px 20px rgba(255,159,10,0.4)',
-              transition: 'transform 0.1s',
             }}
             title="AI-Zug überspringen"
           >⏭</button>

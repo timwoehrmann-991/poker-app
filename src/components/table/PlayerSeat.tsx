@@ -13,6 +13,7 @@ interface PlayerSeatProps {
   winAmount?: number;
   timerProgress?: number;
   timerWarning?: boolean;
+  compact?: boolean;
 }
 
 const PERSONALITY_COLORS: Record<string, string> = {
@@ -32,19 +33,21 @@ const PERSONALITY_EMOJIS: Record<string, string> = {
 
 export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
   player, position, isActive, isDealer, isWinner, isHuman, showCards, winAmount,
-  timerProgress, timerWarning,
+  timerProgress, timerWarning, compact = false,
 }) => {
-  const isFolded      = player.status === PlayerStatus.Folded;
-  const isAllIn       = player.status === PlayerStatus.AllIn;
-  const isEliminated  = player.status === PlayerStatus.Eliminated;
+  const isFolded     = player.status === PlayerStatus.Folded;
+  const isAllIn      = player.status === PlayerStatus.AllIn;
+  const isEliminated = player.status === PlayerStatus.Eliminated;
 
   if (isEliminated) return null;
 
-  const personalityColor = player.aiPersonality ? (PERSONALITY_COLORS[player.aiPersonality] || '#8e8e93') : '#0a84ff';
+  const personalityColor = player.aiPersonality
+    ? (PERSONALITY_COLORS[player.aiPersonality] || '#8e8e93')
+    : '#0a84ff';
 
   let borderColor = 'rgba(255,255,255,0.12)';
-  if (isActive)  borderColor = 'rgba(10,132,255,0.8)';
-  if (isWinner)  borderColor = 'rgba(48,209,88,0.8)';
+  if (isActive) borderColor = 'rgba(10,132,255,0.8)';
+  if (isWinner) borderColor = 'rgba(48,209,88,0.8)';
 
   const glowClass = isActive ? 'active-glow' : isWinner ? 'winner-glow' : '';
 
@@ -56,7 +59,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        opacity: isFolded ? 0.4 : 1,
+        opacity: isFolded ? 0.45 : 1,
         transition: 'opacity 0.3s',
         filter: isFolded ? 'grayscale(0.5)' : 'none',
       }}
@@ -64,7 +67,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
       {/* Dealer button */}
       {isDealer && (
         <div style={{
-          position: 'absolute', top: -8, right: -8,
+          position: 'absolute', top: -10, right: -10,
           width: 20, height: 20, borderRadius: '50%',
           background: 'linear-gradient(135deg, #fff 0%, #e8e8e8 100%)',
           color: '#000', fontSize: 9, fontWeight: 800,
@@ -75,8 +78,8 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
         }}>D</div>
       )}
 
-      {/* Hole cards */}
-      <div style={{ display: 'flex', gap: 3, marginBottom: 4, minHeight: isHuman ? 0 : 50 }}>
+      {/* Hole cards — on compact mode AI placeholder cards are hidden to save vertical space */}
+      <div style={{ display: 'flex', gap: 3, marginBottom: 3, minHeight: (isHuman || compact) ? 0 : 44 }}>
         {player.holeCards && !isFolded ? (
           <>
             <CardComponent card={player.holeCards[0]} faceUp={showCards || isHuman} small dealDelay={0} />
@@ -90,24 +93,65 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
         ) : null}
       </div>
 
-      {/* Info box */}
+      {/* ── Badge row — OUTSIDE the overflow:hidden info box so it's never clipped ── */}
+      {(player.aiPersonality || isHuman) && (
+        <div style={{
+          height: 14,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 2,
+          zIndex: 6,
+          position: 'relative',
+        }}>
+          {player.aiPersonality && (
+            <div style={{
+              background: personalityColor,
+              borderRadius: 8,
+              fontSize: 10,
+              padding: '1px 6px',
+              lineHeight: 1.3,
+              whiteSpace: 'nowrap',
+              boxShadow: `0 2px 8px ${personalityColor}60`,
+            }}>
+              {PERSONALITY_EMOJIS[player.aiPersonality] || '🤖'}
+            </div>
+          )}
+          {isHuman && (
+            <div style={{
+              background: 'var(--color-primary)',
+              borderRadius: 8,
+              fontSize: 9,
+              fontWeight: 700,
+              padding: '1px 7px',
+              color: '#fff',
+              lineHeight: 1.3,
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 8px rgba(10,132,255,0.4)',
+            }}>YOU</div>
+          )}
+        </div>
+      )}
+
+      {/* Info box — no overflow:hidden so nothing inside is ever clipped */}
       <div style={{
         background: 'rgba(12,12,20,0.88)',
         backdropFilter: 'blur(16px)',
         border: `1.5px solid ${borderColor}`,
         borderRadius: 10,
-        padding: '6px 10px',
-        minWidth: 90,
+        padding: compact ? '4px 7px' : '5px 10px',
+        minWidth: compact ? 64 : 80,
         textAlign: 'center',
         position: 'relative',
         transition: 'border-color 0.25s',
-        overflow: 'hidden',
       }}>
-        {/* Timer bar */}
+        {/* Timer bar at bottom of info box */}
         {timerProgress !== undefined && (
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
             background: 'rgba(255,255,255,0.1)',
+            borderRadius: '0 0 10px 10px',
+            overflow: 'hidden',
           }}>
             <div style={{
               height: '100%',
@@ -123,49 +167,25 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
           </div>
         )}
 
-        {/* Personality badge — centred above name */}
-        {player.aiPersonality && (
-          <div style={{
-            position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
-            background: personalityColor, borderRadius: 8,
-            fontSize: 10, padding: '1px 6px', whiteSpace: 'nowrap',
-            boxShadow: `0 2px 8px ${personalityColor}60`,
-          }}>
-            {PERSONALITY_EMOJIS[player.aiPersonality] || '🤖'}
-          </div>
-        )}
-
-        {/* Human "YOU" badge — right-aligned so it never overlaps dealer button */}
-        {isHuman && (
-          <div style={{
-            position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
-            background: 'var(--color-primary)', borderRadius: 8,
-            fontSize: 9, fontWeight: 700, padding: '1px 7px', color: '#fff',
-            whiteSpace: 'nowrap',
-            boxShadow: '0 2px 8px rgba(10,132,255,0.4)',
-          }}>YOU</div>
-        )}
-
         {/* Name */}
         <div style={{
-          fontSize: 11, fontWeight: 600, color: '#fff',
-          marginTop: player.aiPersonality || isHuman ? 6 : 0,
+          fontSize: compact ? 10 : 11, fontWeight: 600, color: '#fff',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          maxWidth: 80,
+          maxWidth: compact ? 64 : 78,
         }}>
           {player.name}
         </div>
 
         {/* Stack */}
         <div style={{
-          fontSize: 13, fontWeight: 700, color: 'var(--color-accent)',
+          fontSize: compact ? 11 : 13, fontWeight: 700, color: 'var(--color-accent)',
           fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em',
         }}>
           €{player.chips.toLocaleString()}
         </div>
 
-        {/* Position */}
-        {position && (
+        {/* Position label — hidden in compact to save space */}
+        {position && !compact && (
           <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', fontWeight: 700, letterSpacing: '0.08em', marginTop: 1 }}>
             {position}
           </div>

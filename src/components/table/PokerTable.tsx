@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/gameStore';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import { useDecisionTimer } from '../../hooks/useDecisionTimer';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
+import { useTableLayout } from '../../hooks/useTableLayout';
 import { PlayerSeat } from './PlayerSeat';
 import { CommunityCards } from './CommunityCards';
 import { ActionPanel } from '../actions/ActionPanel';
@@ -12,12 +13,10 @@ import { ActionType, Street, PlayerStatus } from '../../engine/types';
 import { getTotalPot } from '../../engine/game/PotManager';
 import { useTranslation } from '../../i18n';
 
-function getSeatPositions(count: number): { x: number; y: number }[] {
+function getSeatPositions(count: number, rx: number, ry: number): { x: number; y: number }[] {
   return Array.from({ length: count }, (_, i) => {
     const angle = Math.PI / 2 + (2 * Math.PI * i) / count;
-    // Orbit radii chosen so that no seat center goes below 13 % or above 87 %
-    // horizontally, leaving room for the 90-px-wide info box + cards.
-    return { x: 50 + 38 * Math.cos(angle), y: 50 + 32 * Math.sin(angle) };
+    return { x: 50 + rx * Math.cos(angle), y: 50 + ry * Math.sin(angle) };
   });
 }
 
@@ -31,6 +30,7 @@ export const PokerTable: React.FC = () => {
 
   useGameLoop();
   const { playTimerTick } = useSoundEffects();
+  const layout = useTableLayout();
 
   const legalActions  = useMemo(() => getLegalActions(), [gameState]);
   const isHumanTurn   = useMemo(() => {
@@ -46,7 +46,10 @@ export const PokerTable: React.FC = () => {
   const activePlayers = useMemo(() =>
     gameState?.players.filter(p => p.status !== PlayerStatus.Eliminated) || [],
   [gameState]);
-  const seatPositions = useMemo(() => getSeatPositions(activePlayers.length), [activePlayers.length]);
+  const seatPositions = useMemo(
+    () => getSeatPositions(activePlayers.length, layout.rx, layout.ry),
+    [activePlayers.length, layout.rx, layout.ry],
+  );
   const timer         = useDecisionTimer(isHumanTurn);
 
   const prevSecondRef = React.useRef(0);
@@ -87,7 +90,7 @@ export const PokerTable: React.FC = () => {
       <TrainingOverlay />
 
       {/* Table */}
-      <div style={{ position: 'relative', width: '84%', maxWidth: 860, aspectRatio: '16/10' }}>
+      <div style={{ position: 'relative', width: layout.tableWidth, maxWidth: layout.tableMaxWidth, aspectRatio: layout.aspectRatio }}>
 
         {/* Gold outer ring */}
         <div style={{
@@ -188,6 +191,7 @@ export const PokerTable: React.FC = () => {
                 isActive={isActive}
                 isDealer={player.seatIndex === gameState.dealerSeatIndex}
                 isWinner={!!winResult}
+                compact={layout.compact}
                 isHuman={player.isHuman}
                 showCards={showAllCards}
                 winAmount={winResult?.amount}

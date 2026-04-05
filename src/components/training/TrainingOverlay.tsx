@@ -134,80 +134,98 @@ export const TrainingOverlay: React.FC = () => {
 
   return (
     <>
-      {/* Hint bar - shows when it's human's turn */}
-      {isHumanTurn && hint && showHint && (
-        <div
-          className="absolute bottom-24 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-lg text-sm max-w-md text-center"
-          style={{
-            background: 'rgba(0,0,0,0.85)',
-            border: '1px solid rgba(155, 89, 182, 0.5)',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          <div className="text-purple-400 font-bold text-xs mb-1">
-            💡 Tipp vom GTO-Bot
-          </div>
-          <div className="text-gray-200 text-xs">
-            {formatActionLabel(hint.action)}{hint.amount > 0 ? ` €${hint.amount}` : ''}
-            {hint.reasoning && (
-              <span className="text-gray-400 ml-1">- {hint.reasoning}</span>
-            )}
-          </div>
-        </div>
-      )}
+      {/* ── All overlays use position:fixed so they sit in the viewport
+           bottom-right corner without ever blocking the table view ── */}
 
-      {/* Hint toggle button (when it's human's turn) */}
-      {isHumanTurn && hint && (
-        <button
-          onClick={() => setShowHint(!showHint)}
-          className={`absolute bottom-16 left-1/2 -translate-x-1/2 z-40 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-            showHint
-              ? 'bg-purple-600/40 text-purple-300 border border-purple-500/50'
-              : 'bg-white/10 text-gray-400 hover:bg-white/20 border border-white/10'
-          }`}
-        >
-          {showHint ? '🙈 Tipp ausblenden' : '💡 Tipp anzeigen'}
-        </button>
-      )}
-
-      {/* Feedback toast - shows after human acts */}
+      {/* Feedback toast — appears after human acts, bottom-right */}
       {showFeedback && feedback && (
-        <div
-          className="absolute top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm animate-feedback-in"
-          style={{
-            background: 'rgba(0,0,0,0.9)',
-            border: `1px solid ${getRatingColor(feedback.rating)}40`,
-            backdropFilter: 'blur(8px)',
-            minWidth: 250,
-          }}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-lg">{getRatingEmoji(feedback.rating)}</span>
-            <span
-              className="font-bold text-xs uppercase tracking-wider"
-              style={{ color: getRatingColor(feedback.rating) }}
-            >
+        <div style={{
+          position: 'fixed', bottom: 90, right: 16, zIndex: 60,
+          background: 'rgba(8,8,16,0.94)', backdropFilter: 'blur(14px)',
+          border: `1px solid ${getRatingColor(feedback.rating)}50`,
+          borderRadius: 14, padding: '10px 14px',
+          minWidth: 200, maxWidth: 280,
+          boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${getRatingColor(feedback.rating)}20`,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 16 }}>{getRatingEmoji(feedback.rating)}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: getRatingColor(feedback.rating) }}>
               {getRatingLabel(feedback.rating)}
             </span>
           </div>
           {!feedback.isOptimal && (
-            <div className="text-gray-300 text-xs">
-              Optimal: <span className="text-green-400 font-medium">
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
+              Optimal:{' '}
+              <span style={{ color: '#30d158', fontWeight: 600 }}>
                 {formatActionLabel(feedback.optimalAction)}
                 {feedback.optimalAmount > 0 ? ` €${feedback.optimalAmount}` : ''}
               </span>
             </div>
           )}
           {feedback.reasoning && (
-            <div className="text-gray-500 text-[10px] mt-1">{feedback.reasoning}</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
+              {feedback.reasoning}
+            </div>
           )}
         </div>
       )}
 
-      {/* Session accuracy badge */}
+      {/* Hint content — appears above toggle button */}
+      {isHumanTurn && hint && showHint && (
+        <div style={{
+          position: 'fixed', bottom: 90, right: 16, zIndex: 59,
+          background: 'rgba(8,8,16,0.94)', backdropFilter: 'blur(14px)',
+          border: '1px solid rgba(155,89,182,0.45)',
+          borderRadius: 14, padding: '10px 14px',
+          maxWidth: 260,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#bf5af2', letterSpacing: '0.06em', marginBottom: 5 }}>
+            💡 GTO-Empfehlung
+          </div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
+            {formatActionLabel(hint.action)}{hint.amount > 0 ? ` €${hint.amount}` : ''}
+          </div>
+          {hint.reasoning && (
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>
+              {hint.reasoning}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Hint toggle button — fixed bottom-right, only on human's turn */}
+      {isHumanTurn && hint && (
+        <button
+          onClick={() => setShowHint(v => !v)}
+          style={{
+            position: 'fixed', bottom: 20, right: 16, zIndex: 60,
+            padding: '8px 14px', borderRadius: 24,
+            background: showHint ? 'rgba(191,90,242,0.85)' : 'rgba(20,20,35,0.88)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid ' + (showHint ? 'rgba(191,90,242,0.6)' : 'rgba(255,255,255,0.12)'),
+            color: showHint ? '#fff' : 'rgba(255,255,255,0.6)',
+            fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 5,
+            boxShadow: showHint ? '0 4px 20px rgba(191,90,242,0.35)' : '0 2px 12px rgba(0,0,0,0.4)',
+            transition: 'all 0.15s',
+            touchAction: 'manipulation',
+          }}
+        >
+          {showHint ? '🙈 Tipp aus' : '💡 Tipp'}
+        </button>
+      )}
+
+      {/* Session accuracy badge — top-right, small, not obstructive */}
       {accuracy !== null && feedbackHistory.length >= 3 && (
-        <div className="absolute top-2 right-3 z-30 text-[10px] px-2 py-1 rounded-full bg-purple-900/40 text-purple-300 border border-purple-500/20">
-          Training: {accuracy}% korrekt ({feedbackHistory.length} Aktionen)
+        <div style={{
+          position: 'fixed', top: 54, right: 10, zIndex: 30,
+          fontSize: 10, padding: '3px 8px', borderRadius: 12,
+          background: 'rgba(100,60,170,0.35)', color: 'rgba(191,90,242,0.9)',
+          border: '1px solid rgba(191,90,242,0.2)',
+          backdropFilter: 'blur(8px)',
+        }}>
+          🎓 {accuracy}% ({feedbackHistory.length})
         </div>
       )}
     </>
