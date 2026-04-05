@@ -15,7 +15,9 @@ import { useTranslation } from '../../i18n';
 function getSeatPositions(count: number): { x: number; y: number }[] {
   return Array.from({ length: count }, (_, i) => {
     const angle = Math.PI / 2 + (2 * Math.PI * i) / count;
-    return { x: 50 + 43 * Math.cos(angle), y: 50 + 39 * Math.sin(angle) };
+    // Orbit radii chosen so that no seat center goes below 13 % or above 87 %
+    // horizontally, leaving room for the 90-px-wide info box + cards.
+    return { x: 50 + 38 * Math.cos(angle), y: 50 + 32 * Math.sin(angle) };
   });
 }
 
@@ -85,7 +87,7 @@ export const PokerTable: React.FC = () => {
       <TrainingOverlay />
 
       {/* Table */}
-      <div style={{ position: 'relative', width: '88%', maxWidth: 920, aspectRatio: '16/10' }}>
+      <div style={{ position: 'relative', width: '84%', maxWidth: 860, aspectRatio: '16/10' }}>
 
         {/* Gold outer ring */}
         <div style={{

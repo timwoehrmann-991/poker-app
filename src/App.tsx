@@ -94,7 +94,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Table — takes all remaining space above bottom nav */}
-        <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
+        <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
           {/* Odds panel — overlay on top of table if enabled */}
           {showOdds && (
             <div style={{
@@ -228,9 +228,9 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+        <div style={{ flex: 1, display: 'flex', minHeight: 0, overflow: 'clip' }}>
           {/* Center */}
-          <div style={{ flex: 1, overflow: 'hidden', padding: 6, position: 'relative' }}>
+          <div style={{ flex: 1, minWidth: 0, padding: 6, position: 'relative' }}>
             {showOdds && (
               <div style={{
                 position: 'absolute', top: 10, left: 10, zIndex: 10,
@@ -335,7 +335,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Main layout */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+      <div style={{ flex: 1, display: 'flex', minHeight: 0, overflow: 'clip' }}>
 
         {/* Left: Odds sidebar */}
         {showOdds && (
@@ -348,8 +348,8 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Center: table */}
-        <div style={{ flex: 1, overflow: 'hidden', padding: 6 }}>
+        {/* Center: table — minWidth:0 keeps flex sizing correct; no overflow:hidden so seat cards aren't clipped */}
+        <div style={{ flex: 1, minWidth: 0, padding: 6 }}>
           <PokerTable />
         </div>
 
