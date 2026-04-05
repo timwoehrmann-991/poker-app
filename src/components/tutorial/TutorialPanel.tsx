@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
 const TABS = [
-  { id: 'hands', label: 'Hand Rankings' },
-  { id: 'odds', label: 'Odds & Outs' },
-  { id: 'positions', label: 'Positionen' },
-  { id: 'strategy', label: 'Strategie' },
-  { id: 'glossary', label: 'Glossar' },
+  { id: 'hands',     label: 'Hands',    icon: '🃏' },
+  { id: 'odds',      label: 'Odds',     icon: '📐' },
+  { id: 'positions', label: 'Position', icon: '📍' },
+  { id: 'strategy',  label: 'Strategie',icon: '♟️' },
+  { id: 'glossary',  label: 'Glossar',  icon: '📚' },
 ];
 
 const HAND_RANKINGS = [
@@ -75,26 +75,45 @@ export const TutorialPanel: React.FC = () => {
 
   return (
     <div
-      className="w-72 rounded-xl overflow-hidden flex flex-col"
+      className="w-full rounded-xl overflow-hidden flex flex-col"
       style={{
         background: 'var(--color-bg-panel)',
         border: '1px solid rgba(255,255,255,0.1)',
         maxHeight: '100%',
       }}
     >
-      {/* Tab buttons */}
-      <div className="flex overflow-x-auto border-b border-white/10">
+      {/* Tab buttons — icon + label, evenly distributed, no overflow */}
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
         {TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-2 py-2 text-[10px] font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-              activeTab === tab.id
-                ? 'text-yellow-400 border-b-2 border-yellow-400'
-                : 'text-gray-500 hover:text-gray-300'
-            }`}
+            title={tab.label}
+            style={{
+              flex: 1,
+              padding: '7px 2px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+              borderBottom: activeTab === tab.id ? '2px solid #f59e0b' : '2px solid transparent',
+              transition: 'all 0.15s',
+            }}
           >
-            {tab.label}
+            <span style={{ fontSize: 14 }}>{tab.icon}</span>
+            <span style={{
+              fontSize: 8,
+              fontWeight: 600,
+              letterSpacing: '0.04em',
+              color: activeTab === tab.id ? '#f59e0b' : 'rgba(255,255,255,0.35)',
+              textTransform: 'uppercase',
+              lineHeight: 1,
+            }}>
+              {tab.label.slice(0, 4)}
+            </span>
           </button>
         ))}
       </div>

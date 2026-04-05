@@ -6,7 +6,7 @@ interface DecisionTimerBarProps {
 }
 
 export const DecisionTimerBar: React.FC<DecisionTimerBarProps> = React.memo(({ timer }) => {
-  if (!timer.isRunning && timer.timeRemaining > 0) return null;
+  if (!timer.isRunning) return null;
 
   const { progress, isWarning, timeRemaining } = timer;
   const seconds = Math.ceil(timeRemaining);

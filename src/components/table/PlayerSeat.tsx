@@ -123,24 +123,25 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
           </div>
         )}
 
-        {/* Personality badge */}
+        {/* Personality badge — centred above name */}
         {player.aiPersonality && (
           <div style={{
-            position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
             background: personalityColor, borderRadius: 8,
-            fontSize: 10, padding: '1px 6px',
+            fontSize: 10, padding: '1px 6px', whiteSpace: 'nowrap',
             boxShadow: `0 2px 8px ${personalityColor}60`,
           }}>
             {PERSONALITY_EMOJIS[player.aiPersonality] || '🤖'}
           </div>
         )}
 
-        {/* Human indicator */}
+        {/* Human "YOU" badge — right-aligned so it never overlaps dealer button */}
         {isHuman && (
           <div style={{
-            position: 'absolute', top: -7, left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
             background: 'var(--color-primary)', borderRadius: 8,
             fontSize: 9, fontWeight: 700, padding: '1px 7px', color: '#fff',
+            whiteSpace: 'nowrap',
             boxShadow: '0 2px 8px rgba(10,132,255,0.4)',
           }}>YOU</div>
         )}

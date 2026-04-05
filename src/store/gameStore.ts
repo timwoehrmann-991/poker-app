@@ -5,6 +5,7 @@ import {
   WinnerResult, HandRecord, Position,
 } from '../engine/types';
 import { GameController } from '../engine/game/GameController';
+import { getAIDecision } from '../ai/AIPlayer';
 
 export interface GameSetupConfig {
   playerCount: number;
@@ -50,6 +51,7 @@ export interface GameStoreState {
   getLegalActions: () => LegalActions | null;
   getHumanPlayer: () => Player | null;
   rotateDealerAndStartNewHand: () => void;
+  forceAITurn: () => void;
 }
 
 export const useGameStore = create<GameStoreState>()((set, get) => ({
@@ -166,5 +168,32 @@ export const useGameStore = create<GameStoreState>()((set, get) => ({
     if (!controller) return;
     controller.rotateDealerButton();
     get().startNewHand();
+  },
+
+  forceAITurn: () => {
+    const { controller, gameState } = get();
+    if (!controller || !gameState || !gameState.isHandInProgress) return;
+
+    const activeIdx = gameState.activePlayerIndex;
+    if (activeIdx === null) return;
+
+    const activePlayer = gameState.players[activeIdx];
+    if (activePlayer.isHuman || activePlayer.status !== PlayerStatus.Active) return;
+
+    const legalActions = controller.getLegalActions();
+    if (!legalActions) return;
+
+    const posMap   = controller.getPositionMap();
+    const position = posMap.get(activePlayer.seatIndex) || Position.Button;
+
+    const decision = getAIDecision(
+      activePlayer.aiPersonality!,
+      gameState,
+      activePlayer,
+      position,
+      legalActions,
+    );
+
+    get().performAction(decision.action, decision.amount);
   },
 }));
