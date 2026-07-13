@@ -151,7 +151,7 @@ export const TutorialPanel: React.FC = () => {
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 overflow-y-auto p-3" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+      <div className="flex-1 overflow-y-auto" style={{ fontSize: 11, color: 'var(--text-secondary)', padding: '14px 14px 16px' }}>
         {activeTab === 'hands' && (
           <div className="space-y-2">
             <SectionTitle>Poker Hand Rankings</SectionTitle>
@@ -159,7 +159,7 @@ export const TutorialPanel: React.FC = () => {
               <div
                 key={hand.name}
                 style={{
-                  padding: '7px 9px', borderRadius: 10,
+                  padding: '10px 12px', borderRadius: 10,
                   background: 'var(--surface-inset)',
                   borderLeft: `3px solid ${TIER_COLORS[hand.tier]}`,
                 }}
@@ -182,11 +182,11 @@ export const TutorialPanel: React.FC = () => {
           <div className="space-y-3">
             <SectionTitle>Rule of 2 and 4</SectionTitle>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-              <div style={{ padding: '8px 10px', borderRadius: 10, background: 'var(--surface-inset)', textAlign: 'center' }}>
+              <div style={{ padding: '10px 12px', borderRadius: 10, background: 'var(--surface-inset)', textAlign: 'center' }}>
                 <div style={{ fontSize: 9, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Flop → River</div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-success)', marginTop: 2 }}>Outs × 4</div>
               </div>
-              <div style={{ padding: '8px 10px', borderRadius: 10, background: 'var(--surface-inset)', textAlign: 'center' }}>
+              <div style={{ padding: '10px 12px', borderRadius: 10, background: 'var(--surface-inset)', textAlign: 'center' }}>
                 <div style={{ fontSize: 9, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Turn → River</div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-primary)', marginTop: 2 }}>Outs × 2</div>
               </div>
@@ -237,7 +237,7 @@ export const TutorialPanel: React.FC = () => {
                 { title: 'Blinds', seats: 'SB (Small Blind), BB (Big Blind)', tip: 'Schlechteste Post-Flop Position. Preflop-Discount durch Pflichteinzahlungen.', color: 'var(--color-primary)' },
               ].map(p => (
                 <div key={p.title} style={{
-                  padding: '8px 10px', borderRadius: 10,
+                  padding: '10px 12px', borderRadius: 10,
                   background: 'var(--surface-inset)',
                   borderLeft: `3px solid ${p.color}`,
                 }}>
@@ -318,7 +318,7 @@ export const TutorialPanel: React.FC = () => {
                 g.en.toLowerCase().includes(searchTerm.toLowerCase())
               )
               .map(g => (
-                <div key={g.term} style={{ padding: '7px 9px', borderRadius: 8, background: 'var(--surface-inset)' }}>
+                <div key={g.term} style={{ padding: '10px 12px', borderRadius: 8, background: 'var(--surface-inset)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <span style={{ fontWeight: 700, color: 'var(--color-accent)', fontSize: 11 }}>{g.term}</span>
                     <span style={{ color: 'var(--text-faint)', fontSize: 9 }}>{g.en}</span>

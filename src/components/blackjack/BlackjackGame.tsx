@@ -236,8 +236,8 @@ export const BlackjackGame: React.FC<BlackjackGameProps> = ({ onBack }) => {
   const store = useBlackjackStore();
   const coachOn = useSettingsStore(s => s.beginnerMode);
   const { t, language } = useTranslation();
-  const [rulesOpen, setRulesOpen] = useState(true);
-  const [rulesAutoClosed, setRulesAutoClosed] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const [expandedRule, setExpandedRule] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [screen, setScreen] = useState<'game' | 'matrix' | 'quiz'>('game');
@@ -254,12 +254,7 @@ export const BlackjackGame: React.FC<BlackjackGameProps> = ({ onBack }) => {
   const legal = st?.legalActions ?? { canHit: false, canStand: false, canDouble: false, canSplit: false, canSurrender: false };
   const activeHand = isHumanTurn && human ? human.hands[human.activeHandIndex] : null;
 
-  // Regelheft beim allerersten Austeilen automatisch einklappen
   const handleDeal = () => {
-    if (!rulesAutoClosed) {
-      setRulesOpen(false);
-      setRulesAutoClosed(true);
-    }
     void store.dealRound();
   };
 
@@ -512,15 +507,37 @@ export const BlackjackGame: React.FC<BlackjackGameProps> = ({ onBack }) => {
             display: 'flex', flexDirection: 'column', gap: 10,
           }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>📖 Blackjack-Regelheft</div>
-            {rules.map(rule => (
-              <div key={rule.title} style={{
-                padding: '8px 10px', borderRadius: 10, background: 'var(--surface-inset)',
-                borderLeft: '3px solid var(--color-accent)',
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>{rule.title}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, lineHeight: 1.55 }}>{rule.text}</div>
-              </div>
-            ))}
+            <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: -6 }}>
+              Tippe auf eine Regel, um die Erklärung aufzuklappen.
+            </div>
+            {rules.map(rule => {
+              const open = expandedRule === rule.title;
+              return (
+                <div key={rule.title} style={{
+                  borderRadius: 10, background: 'var(--surface-inset)',
+                  borderLeft: `3px solid ${open ? 'var(--color-accent)' : 'var(--border-strong)'}`,
+                  overflow: 'hidden',
+                }}>
+                  <button
+                    onClick={() => setExpandedRule(open ? null : rule.title)}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer',
+                      fontSize: 11, fontWeight: 700, color: open ? 'var(--color-accent)' : 'var(--text-primary)',
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rule.title}
+                    <span style={{ fontSize: 9, color: 'var(--text-tertiary)', transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>▶</span>
+                  </button>
+                  {open && (
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.55, padding: '0 12px 10px' }}>
+                      {rule.text}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

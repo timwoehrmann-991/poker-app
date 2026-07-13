@@ -7,7 +7,7 @@ import { useBlackjackProgressStore, categoryOfHand } from './blackjackProgressSt
 const COMPANION_NAMES = ['Anna', 'Ben', 'Clara', 'David', 'Emma'];
 
 const SPEED_MULT: Record<string, number> = {
-  slow: 1.4, normal: 1, fast: 0.5, instant: 0.05,
+  slow: 1.75, normal: 1, fast: 0.5, instant: 0.05,
 };
 
 function speedMult(): number {
@@ -144,7 +144,7 @@ export const useBlackjackStore = create<BlackjackStoreState>()((set, get) => {
       if (st.phase === 'dealerTurn') {
         // Hole-Card-Moment: Beat, dann Flip
         say(engine, 'Bank deckt auf …');
-        await think(700, 300);
+        await think(1100, 400);
         if (!alive(engine)) break;
         set(s => ({ holeFlips: s.holeFlips + 1 }));
         sync(engine); // dealerRevealed wird beim ersten dealerStep gesetzt
@@ -156,7 +156,7 @@ export const useBlackjackStore = create<BlackjackStoreState>()((set, get) => {
           const value = handValue(engine.getState().dealerCards);
           if (result === 'draw') {
             say(engine, `Bank hat ${value.total} — Bank zieht …`);
-            await think(650, 350);
+            await think(1000, 450);
           } else {
             const bust = value.total > 21;
             say(engine, bust
@@ -284,10 +284,13 @@ export const useBlackjackStore = create<BlackjackStoreState>()((set, get) => {
 
       set({ isRunning: true, dealtSteps: 0, suppressHole: dealerHasBJ, state: after });
       for (let step = 1; step <= totalSteps; step++) {
-        await sleep(170);
+        // Ruhiges Tempo: Man sieht jede Karte über den Tisch wandern
+        await sleep(420);
         if (!alive(engine)) return;
         set({ dealtSteps: step });
       }
+      await sleep(300);
+      if (!alive(engine)) return;
       set({ dealtSteps: null });
 
       // Spieler-Blackjack sofort feiern
@@ -300,7 +303,7 @@ export const useBlackjackStore = create<BlackjackStoreState>()((set, get) => {
       // Dealer-Peek-Drama, wenn die Bank direkt Blackjack hat
       if (dealerHasBJ) {
         say(engine, 'Bank prüft auf Blackjack …');
-        await think(900, 300);
+        await think(1300, 400);
         if (!alive(engine)) return;
         set(s => ({ suppressHole: false, holeFlips: s.holeFlips + 1 }));
         say(engine, 'Blackjack der Bank.');

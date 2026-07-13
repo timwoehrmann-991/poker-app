@@ -98,7 +98,9 @@ const SeatView: React.FC<{
   visibleInitial: number | null;
   clearing: boolean;
   compact: boolean;
-}> = ({ seat, isActive, activeHandIndex, showResults, visibleInitial, clearing, compact }) => {
+  /** Startversatz des Kartenflugs (Richtung Bank), in px */
+  flyFrom: { dx: number; dy: number };
+}> = ({ seat, isActive, activeHandIndex, showResults, visibleInitial, clearing, compact, flyFrom }) => {
   const sitOut = seat.hands.length === 0;
   const splitTight = seat.hands.length > 1 && compact;
   return (
@@ -124,7 +126,15 @@ const SeatView: React.FC<{
               <div className={clearing ? 'card-clear' : ''} style={{ display: 'flex', minHeight: compact ? 44 : 52 }}>
                 {hand.cards.slice(0, visibleCards).map((card, ci) => (
                   // Index im Key: der 6-Deck-Shoe kann identische Karten-IDs in eine Hand legen
-                  <div key={`${card.id}-${ci}`} style={{ marginLeft: ci > 0 ? -22 : 0, zIndex: ci }}>
+                  <div
+                    key={`${card.id}-${ci}`}
+                    className="deal-fly"
+                    style={{
+                      marginLeft: ci > 0 ? -22 : 0, zIndex: ci,
+                      ['--deal-from-x' as string]: `${flyFrom.dx}px`,
+                      ['--deal-from-y' as string]: `${flyFrom.dy}px`,
+                    }}
+                  >
                     <CardComponent card={card} faceUp small flat />
                   </div>
                 ))}
@@ -268,8 +278,11 @@ export const BlackjackTable: React.FC<{ state: BJState }> = ({ state }) => {
               // Index im Key (A1) + holeFlips: Remount beim Aufdecken triggert den Flip
               <div
                 key={isHole ? `${card.id}-${i}-${faceUp}-${holeFlips}` : `${card.id}-${i}`}
-                className={justFlipped ? 'flip-reveal' : ''}
-                style={{ marginLeft: i > 0 ? -22 : 0, position: 'relative', zIndex: i }}
+                className={justFlipped ? 'flip-reveal' : 'deal-fly'}
+                style={{
+                  marginLeft: i > 0 ? -22 : 0, position: 'relative', zIndex: i,
+                  ['--deal-from-y' as string]: '-70px',
+                }}
               >
                 <CardComponent card={card} faceUp={faceUp} small flat />
               </div>
@@ -349,6 +362,11 @@ export const BlackjackTable: React.FC<{ state: BJState }> = ({ state }) => {
       {state.seats.map((seat, i) => {
         const pos = positions[i];
         const isActive = state.activeSeatIndex === i;
+        // Flugrichtung: von der Bank (oben Mitte) zum Sitz — grob in px umgerechnet
+        const flyFrom = {
+          dx: Math.round((DEALER_POS.x - pos.x) * (isMobile ? 3.4 : 7.5)),
+          dy: Math.round((DEALER_POS.y - pos.y) * (isMobile ? 3.4 : 4.8)),
+        };
         return (
           <div key={seat.id} style={{
             position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`,
@@ -362,6 +380,7 @@ export const BlackjackTable: React.FC<{ state: BJState }> = ({ state }) => {
               visibleInitial={visibleInitialFor(i)}
               clearing={clearing}
               compact={compact}
+              flyFrom={flyFrom}
             />
           </div>
         );

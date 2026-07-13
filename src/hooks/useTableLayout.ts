@@ -14,7 +14,12 @@ function computeLayout(vw: number, vh: number): TableLayout {
   const isPortrait = vh > vw;
 
   if (!isMobile) {
-    return { tableWidth: '84%', tableMaxWidth: 860, aspectRatio: '16/10', rx: 38, ry: 32, compact: false };
+    // 16/11 statt 16/10 + größerer y-Orbit: Board, Pot und Sitze
+    // teilen sich sonst auf flachen Ovalen dasselbe vertikale Band.
+    // Unter ~1150px Fensterbreite zusätzlich kompakte Karten/Sitze,
+    // sonst kollidieren die fixen Pixelgrößen mit dem kleinen Oval.
+    const compact = vw < 1150;
+    return { tableWidth: '84%', tableMaxWidth: 860, aspectRatio: '16/11', rx: 38, ry: 36, compact };
   }
 
   if (isPortrait) {

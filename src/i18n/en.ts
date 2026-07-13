@@ -114,7 +114,7 @@ export const en = {
 
   // Settings
   'settings.title': 'Settings',
-  'settings.animationSpeed': 'Animation Speed',
+  'settings.animationSpeed': 'Game speed (Poker & Blackjack)',
   'settings.slow': 'Slow',
   'settings.normal': 'Normal',
   'settings.fast': 'Fast',

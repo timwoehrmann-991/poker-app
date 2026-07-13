@@ -207,50 +207,50 @@ export const PokerTable: React.FC = () => {
           </div>
         )}
 
-        {/* Pot display */}
-        {shownPot > 0 && (
-          <div style={{
-            position: 'absolute', top: `${POT_POS.y - 3}%`, left: `${POT_POS.x}%`, transform: 'translateX(-50%)',
-            zIndex: 10, textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 9, color: 'var(--felt-text)', marginBottom: 3, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{t('ui.pot')}</div>
-            <div style={{
-              background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(230,190,90,0.4)',
-              borderRadius: 24, padding: '6px 16px',
-              display: 'flex', alignItems: 'center', gap: 10,
-              boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-            }}>
-              <ChipStack amount={shownPot} size={13} showAmount={false} />
-              <span style={{
-                fontSize: 20, fontWeight: 700, color: '#e8c860',
-                textShadow: '0 0 16px rgba(230,190,90,0.45)',
-                fontVariantNumeric: 'tabular-nums',
-              }}>
-                {formatEuro(shownPot)}
-              </span>
-            </div>
-            {/* Side pots */}
-            {gameState.pots.length > 1 && (
-              <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginTop: 4 }}>
-                {gameState.pots.map((pot, i) => (
-                  <div key={i} style={{
-                    background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 8, padding: '1px 7px', fontSize: 9, color: 'rgba(255,255,255,0.4)',
-                  }}>
-                    {pot.isMainPot ? 'Main' : `Side ${i}`}: {formatEuro(pot.amount)}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Community cards */}
+        {/* Community cards + Pot: Der Pot hängt DIREKT über dem Board
+            (bottom: 100%), damit er nie in die Karten hineinwächst */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)', zIndex: 10,
         }}>
+          {shownPot > 0 && (
+            <div style={{
+              position: 'absolute', bottom: '100%', left: '50%',
+              transform: 'translateX(-50%)', marginBottom: 10,
+              textAlign: 'center', whiteSpace: 'nowrap',
+            }}>
+              {/* Side pots über der Haupt-Pille */}
+              {gameState.pots.length > 1 && (
+                <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginBottom: 4 }}>
+                  {gameState.pots.map((pot, i) => (
+                    <div key={i} style={{
+                      background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: 8, padding: '1px 7px', fontSize: 9, color: 'rgba(255,255,255,0.4)',
+                    }}>
+                      {pot.isMainPot ? 'Main' : `Side ${i}`}: {formatEuro(pot.amount)}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(230,190,90,0.4)',
+                borderRadius: 24, padding: '4px 14px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+              }}>
+                <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>{t('ui.pot')}</span>
+                <ChipStack amount={shownPot} size={12} showAmount={false} />
+                <span style={{
+                  fontSize: 16, fontWeight: 700, color: '#e8c860',
+                  textShadow: '0 0 16px rgba(230,190,90,0.45)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}>
+                  {formatEuro(shownPot)}
+                </span>
+              </div>
+            </div>
+          )}
           <CommunityCards cards={shownBoard} compact={layout.compact} />
         </div>
 

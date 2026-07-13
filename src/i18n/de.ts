@@ -116,7 +116,7 @@ export const de: Record<TranslationKey, string> = {
 
   // Settings
   'settings.title': 'Einstellungen',
-  'settings.animationSpeed': 'Animationsgeschwindigkeit',
+  'settings.animationSpeed': 'Spieltempo (gilt für Poker & Blackjack)',
   'settings.slow': 'Langsam',
   'settings.normal': 'Normal',
   'settings.fast': 'Schnell',
