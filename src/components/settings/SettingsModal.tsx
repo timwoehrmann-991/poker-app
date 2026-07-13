@@ -35,114 +35,98 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)' }}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', padding: 16 }}
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-md rounded-2xl p-6 max-h-[80vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
         style={{
+          width: '100%', maxWidth: 540, maxHeight: '86vh', overflowY: 'auto',
+          borderRadius: 24,
+          padding: '28px 30px 26px',
           background: 'var(--color-bg-elevated)',
           border: '1px solid var(--border-strong)',
           boxShadow: 'var(--glass-shadow-lg)',
         }}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{t('settings.title')}</h2>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 20 }}>⚙️</span>
+            <h2 style={{ fontSize: 19, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
+              {t('settings.title')}
+            </h2>
+          </div>
           <button
             onClick={onClose}
             style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'var(--surface-inset)', border: 'none',
-              color: 'var(--text-secondary)', cursor: 'pointer',
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'var(--surface-inset)', border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s',
             }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-inset-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface-inset)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
           >
             ✕
           </button>
         </div>
 
-        {/* Color Theme */}
-        <div className="mb-5">
-          <SettingLabel>{t('settings.theme')}</SettingLabel>
+        {/* ── Erscheinungsbild ────────────────────────────── */}
+        <GroupHeader>Erscheinungsbild</GroupHeader>
+
+        <Section label={t('settings.theme')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {THEMES.map(theme => (
-              <button
-                key={theme.value}
-                onClick={() => settings.setColorScheme(theme.value)}
-                style={{
-                  padding: '8px 10px', borderRadius: 10, cursor: 'pointer',
-                  border: settings.colorScheme === theme.value
-                    ? '1.5px solid var(--color-accent)'
-                    : '1px solid var(--border-subtle)',
-                  background: settings.colorScheme === theme.value ? 'var(--color-accent-soft)' : 'transparent',
-                  color: 'var(--text-primary)', fontSize: 12, fontWeight: 600,
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}
-              >
-                <span style={{ width: 28, height: 18, borderRadius: 5, background: theme.swatch, border: '1px solid var(--border-subtle)', flexShrink: 0 }} />
-                {theme.label}
-              </button>
-            ))}
+            {THEMES.map(theme => {
+              const active = settings.colorScheme === theme.value;
+              return (
+                <OptionButton key={theme.value} active={active} onClick={() => settings.setColorScheme(theme.value)}>
+                  <span style={{ width: 30, height: 20, borderRadius: 6, background: theme.swatch, border: '1px solid var(--border-strong)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 12.5, fontWeight: 600 }}>{theme.label}</span>
+                </OptionButton>
+              );
+            })}
           </div>
-        </div>
+        </Section>
 
-        {/* Table Background */}
-        <div className="mb-5">
-          <SettingLabel>Hintergrund</SettingLabel>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {BACKGROUNDS.map(bg => (
-              <button
-                key={bg.value}
-                onClick={() => settings.setTableBackground(bg.value)}
-                style={{
-                  flex: 1, padding: '7px 4px', borderRadius: 10, cursor: 'pointer',
-                  border: settings.tableBackground === bg.value
-                    ? '1.5px solid var(--color-accent)'
-                    : '1px solid var(--border-subtle)',
-                  background: settings.tableBackground === bg.value ? 'var(--color-accent-soft)' : 'transparent',
-                  color: settings.tableBackground === bg.value ? 'var(--color-accent)' : 'var(--text-secondary)',
-                  fontSize: 10, fontWeight: 600,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-                }}
-              >
-                <span style={{ fontSize: 15 }}>{bg.icon}</span>
-                {bg.label}
-              </button>
-            ))}
+        <Section label="Hintergrund">
+          <div style={{ display: 'flex', gap: 8 }}>
+            {BACKGROUNDS.map(bg => {
+              const active = settings.tableBackground === bg.value;
+              return (
+                <OptionButton key={bg.value} active={active} onClick={() => settings.setTableBackground(bg.value)} column>
+                  <span style={{ fontSize: 17 }}>{bg.icon}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 600 }}>{bg.label}</span>
+                </OptionButton>
+              );
+            })}
           </div>
-        </div>
+        </Section>
 
-        {/* Table Felt Color */}
-        <div className="mb-5">
-          <SettingLabel>Tischfarbe</SettingLabel>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {FELT_COLORS.map(felt => (
-              <button
-                key={felt.value}
-                onClick={() => settings.setFeltColor(felt.value)}
-                style={{
-                  flex: 1, padding: '7px 4px', borderRadius: 10, cursor: 'pointer',
-                  border: settings.feltColor === felt.value
-                    ? '1.5px solid var(--color-accent)'
-                    : '1px solid var(--border-subtle)',
-                  background: settings.feltColor === felt.value ? 'var(--color-accent-soft)' : 'transparent',
-                  color: settings.feltColor === felt.value ? 'var(--color-accent)' : 'var(--text-secondary)',
-                  fontSize: 10, fontWeight: 600,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                }}
-              >
-                <span style={{
-                  width: 26, height: 16, borderRadius: 8, background: felt.swatch,
-                  border: '1px solid var(--border-strong)',
-                }} />
-                {felt.label}
-              </button>
-            ))}
+        <Section label="Tischfarbe" last>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {FELT_COLORS.map(felt => {
+              const active = settings.feltColor === felt.value;
+              return (
+                <OptionButton key={felt.value} active={active} onClick={() => settings.setFeltColor(felt.value)} column>
+                  <span style={{ width: 28, height: 18, borderRadius: 9, background: felt.swatch, border: '1px solid var(--border-strong)' }} />
+                  <span style={{ fontSize: 10.5, fontWeight: 600 }}>{felt.label}</span>
+                </OptionButton>
+              );
+            })}
           </div>
-        </div>
+        </Section>
 
-        {/* Animation Speed */}
-        <div className="mb-5">
-          <SettingLabel>{t('settings.animationSpeed')}</SettingLabel>
-          <div className="flex gap-2">
+        <Divider />
+
+        {/* ── Spiel & Ton ─────────────────────────────────── */}
+        <GroupHeader>Spiel & Ton</GroupHeader>
+
+        <Section label={t('settings.animationSpeed')}>
+          <div style={{ display: 'flex', gap: 8 }}>
             {(['slow', 'normal', 'fast', 'instant'] as AnimationSpeed[]).map(speed => (
               <PillButton
                 key={speed}
@@ -153,30 +137,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </PillButton>
             ))}
           </div>
-        </div>
+        </Section>
 
-        {/* Sound */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center mb-2">
-            <SettingLabel noMargin>{t('settings.sound')}</SettingLabel>
+        <Section label={t('settings.sound')}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            background: 'var(--surface-inset)', border: '1px solid var(--border-subtle)',
+            borderRadius: 12, padding: '10px 14px',
+          }}>
             <Toggle value={settings.soundEnabled} onChange={settings.setSoundEnabled} />
-          </div>
-          {settings.soundEnabled && (
             <input
               type="range"
               min={0}
               max={100}
+              disabled={!settings.soundEnabled}
               value={settings.soundVolume * 100}
               onChange={(e) => settings.setSoundVolume(Number(e.target.value) / 100)}
-              style={{ width: '100%', accentColor: 'var(--color-accent)' }}
+              style={{ flex: 1, accentColor: 'var(--color-accent)', opacity: settings.soundEnabled ? 1 : 0.4 }}
             />
-          )}
-        </div>
+          </div>
+        </Section>
 
-        {/* Language */}
-        <div className="mb-5">
-          <SettingLabel>{t('settings.language')}</SettingLabel>
-          <div className="flex gap-2">
+        <Section label={t('settings.language')} last>
+          <div style={{ display: 'flex', gap: 8 }}>
             {[
               { value: 'de' as Language, label: '🇩🇪 Deutsch' },
               { value: 'en' as Language, label: '🇬🇧 English' },
@@ -190,55 +173,78 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </PillButton>
             ))}
           </div>
-        </div>
+        </Section>
 
-        {/* Toggles */}
-        <div className="space-y-3">
-          <ToggleRow
-            label="Odds Calculator anzeigen"
-            value={settings.showOddsCalculator}
-            onChange={settings.setShowOddsCalculator}
-          />
-          <ToggleRow
-            label="Charakter-Symbole am Tisch (🦈 📞 …)"
-            value={settings.showPersonalityBadges}
-            onChange={settings.setShowPersonalityBadges}
-          />
-          <ToggleRow
-            label="Tutorial anzeigen"
-            value={settings.showTutorial}
-            onChange={settings.setShowTutorial}
-          />
-          <ToggleRow
-            label={t('settings.autoFold')}
-            value={settings.autoFoldJunk}
-            onChange={settings.setAutoFoldJunk}
-          />
-          <ToggleRow
-            label={t('settings.beginnerMode')}
-            value={settings.beginnerMode}
-            onChange={settings.setBeginnerMode}
-          />
+        <Divider />
+
+        {/* ── Tisch & Lernen ──────────────────────────────── */}
+        <GroupHeader>Tisch & Lernen</GroupHeader>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <ToggleRow label="Odds-Rechner anzeigen"        value={settings.showOddsCalculator}   onChange={settings.setShowOddsCalculator} />
+          <ToggleRow label="Charakter-Symbole am Tisch (🦈 📞 …)" value={settings.showPersonalityBadges} onChange={settings.setShowPersonalityBadges} />
+          <ToggleRow label="Tutorial anzeigen"            value={settings.showTutorial}         onChange={settings.setShowTutorial} />
+          <ToggleRow label={t('settings.autoFold')}       value={settings.autoFoldJunk}         onChange={settings.setAutoFoldJunk} />
+          <ToggleRow label={t('settings.beginnerMode')}   value={settings.beginnerMode}         onChange={settings.setBeginnerMode} />
         </div>
       </div>
     </div>
   );
 };
 
-const SettingLabel: React.FC<{ children: React.ReactNode; noMargin?: boolean }> = ({ children, noMargin }) => (
-  <label style={{
-    display: 'block', fontSize: 12, color: 'var(--text-secondary)',
-    marginBottom: noMargin ? 0 : 8, fontWeight: 600,
-  }}>
+/** Kleiner Abschnitts-Überkopf mit Akzentpunkt */
+const GroupHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-accent)' }} />
+    <span style={{
+      fontSize: 11, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase',
+      color: 'var(--color-accent)',
+    }}>
+      {children}
+    </span>
+  </div>
+);
+
+const Section: React.FC<{ label: string; last?: boolean; children: React.ReactNode }> = ({ label, last, children }) => (
+  <div style={{ marginBottom: last ? 0 : 18 }}>
+    <label style={{
+      display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8,
+    }}>
+      {label}
+    </label>
     {children}
-  </label>
+  </div>
+);
+
+const Divider: React.FC = () => (
+  <div style={{ height: 1, background: 'var(--border-subtle)', margin: '22px 0' }} />
+);
+
+const OptionButton: React.FC<{
+  active: boolean; onClick: () => void; column?: boolean; children: React.ReactNode;
+}> = ({ active, onClick, column, children }) => (
+  <button
+    onClick={onClick}
+    style={{
+      flex: column ? 1 : undefined,
+      padding: column ? '9px 4px' : '9px 12px', borderRadius: 12, cursor: 'pointer',
+      border: active ? '1.5px solid var(--color-accent)' : '1px solid var(--border-subtle)',
+      background: active ? 'var(--color-accent-soft)' : 'var(--surface-inset)',
+      color: active ? 'var(--color-accent)' : 'var(--text-primary)',
+      display: 'flex', flexDirection: column ? 'column' : 'row', alignItems: 'center',
+      justifyContent: column ? 'center' : 'flex-start', gap: column ? 4 : 9,
+      transition: 'all 0.15s',
+    }}
+  >
+    {children}
+  </button>
 );
 
 const PillButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
     style={{
-      flex: 1, padding: '6px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+      flex: 1, padding: '9px 8px', borderRadius: 10, fontSize: 11.5, fontWeight: 700,
       cursor: 'pointer', transition: 'all 0.15s',
       border: active ? '1.5px solid var(--color-accent)' : '1px solid var(--border-subtle)',
       background: active ? 'var(--color-accent-soft)' : 'var(--surface-inset)',
@@ -253,16 +259,16 @@ const Toggle: React.FC<{ value: boolean; onChange: (v: boolean) => void }> = ({ 
   <button
     onClick={() => onChange(!value)}
     style={{
-      width: 40, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+      width: 42, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', flexShrink: 0,
       background: value ? 'var(--color-success)' : 'var(--surface-inset-hover)',
       transition: 'background 0.2s', position: 'relative',
     }}
   >
     <div style={{
-      width: 16, height: 16, borderRadius: '50%', background: '#fff',
+      width: 18, height: 18, borderRadius: '50%', background: '#fff',
       boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-      position: 'absolute', top: 2,
-      left: value ? 22 : 2, transition: 'left 0.2s',
+      position: 'absolute', top: 3,
+      left: value ? 21 : 3, transition: 'left 0.2s',
     }} />
   </button>
 );
@@ -272,8 +278,14 @@ const ToggleRow: React.FC<{
   value: boolean;
   onChange: (v: boolean) => void;
 }> = ({ label, value, onChange }) => (
-  <div className="flex justify-between items-center">
-    <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{label}</span>
+  <div style={{
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+    padding: '9px 12px', borderRadius: 11,
+    background: value ? 'var(--color-accent-soft)' : 'var(--surface-inset)',
+    border: `1px solid ${value ? 'var(--color-accent-border)' : 'var(--border-subtle)'}`,
+    transition: 'all 0.15s',
+  }}>
+    <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>{label}</span>
     <Toggle value={value} onChange={onChange} />
   </div>
 );

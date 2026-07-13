@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { TOURNAMENT_LEVELS, HANDS_PER_LEVEL } from '../../store/gameStore';
+import { formatEuro } from '../../utils/format';
 
 const TABS = [
   { id: 'hands',     label: 'Blätter',  icon: '🃏' },
   { id: 'odds',      label: 'Odds',     icon: '📐' },
   { id: 'positions', label: 'Position', icon: '📍' },
   { id: 'strategy',  label: 'Strategie',icon: '♟️' },
+  { id: 'tournament',label: 'Turnier',  icon: '🏆' },
   { id: 'glossary',  label: 'Glossar',  icon: '📚' },
 ];
 
@@ -294,6 +297,100 @@ export const TutorialPanel: React.FC = () => {
               <p>• Pot Control mit mittleren Händen</p>
               <p>• Gegner beobachten und anpassen</p>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'tournament' && (
+          <div className="space-y-3">
+            <SectionTitle>🏆 So funktioniert ein Turnier</SectionTitle>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 10.5, lineHeight: 1.6 }}>
+              Alle starten mit gleich vielen Chips. Anders als im Cash Game kannst du
+              <strong style={{ color: 'var(--text-primary)' }}> nicht nachkaufen</strong> — wer keine Chips mehr hat,
+              scheidet aus. Es wird gespielt, bis <strong style={{ color: 'var(--text-primary)' }}>ein Spieler alle Chips</strong> hat.
+              Dein Ziel ist also nicht der einzelne Pot, sondern möglichst lange zu überleben und am Ende Erster zu werden.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+              <div style={{ padding: '10px 12px', borderRadius: 10, background: 'var(--surface-inset)', borderLeft: '3px solid var(--color-primary)' }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-primary)' }}>💶 Cash Game</div>
+                <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', marginTop: 3, lineHeight: 1.5 }}>
+                  Feste Blinds · jederzeit ein-/aussteigen · Chips = echtes Geld · nachkaufen erlaubt
+                </div>
+              </div>
+              <div style={{ padding: '10px 12px', borderRadius: 10, background: 'var(--surface-inset)', borderLeft: '3px solid var(--color-accent)' }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-accent)' }}>🏆 Turnier</div>
+                <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', marginTop: 3, lineHeight: 1.5 }}>
+                  Blinds steigen · Ausscheiden bei 0 Chips · letzter Spieler gewinnt · Platzierung zählt
+                </div>
+              </div>
+            </div>
+
+            <SectionTitle>📈 Blind-Level</SectionTitle>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: 10, lineHeight: 1.55, marginBottom: 4 }}>
+              Die Blinds (Pflichteinsätze) steigen <strong style={{ color: 'var(--color-accent)' }}>alle {HANDS_PER_LEVEL} Hände</strong> um
+              eine Stufe. Dadurch steigt der Druck: Wer nur wartet, wird von den wachsenden Blinds aufgefressen.
+            </p>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', fontSize: 10, borderCollapse: 'collapse', fontVariantNumeric: 'tabular-nums' }}>
+                <thead>
+                  <tr style={{ color: 'var(--text-tertiary)' }}>
+                    <th style={{ textAlign: 'left', padding: '3px 6px', fontWeight: 700 }}>Level</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px', fontWeight: 700 }}>Small Blind</th>
+                    <th style={{ textAlign: 'right', padding: '3px 6px', fontWeight: 700 }}>Big Blind</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {TOURNAMENT_LEVELS.map((lvl, i) => (
+                    <tr key={i} style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                      <td style={{ padding: '3px 6px', color: 'var(--text-secondary)', fontWeight: 700 }}>{i + 1}</td>
+                      <td style={{ padding: '3px 6px', textAlign: 'right', color: 'var(--text-secondary)' }}>{formatEuro(lvl.sb)}</td>
+                      <td style={{ padding: '3px 6px', textAlign: 'right', color: 'var(--color-accent)', fontWeight: 700 }}>{formatEuro(lvl.bb)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <SectionTitle>🎯 Ziel & Platzierung</SectionTitle>
+            <div style={{ color: 'var(--text-tertiary)', display: 'flex', flexDirection: 'column', gap: 3, fontSize: 10 }}>
+              <p>• Verlierst du alle Chips, ist das Turnier für dich vorbei — dein <strong style={{ color: 'var(--text-primary)' }}>Platz</strong> wird festgehalten.</p>
+              <p>• Je später du ausscheidest, desto besser die Platzierung (z.&nbsp;B. 3. von 8).</p>
+              <p>• Hast du am Ende alle Chips, gewinnst du das Turnier (1. Platz).</p>
+            </div>
+
+            <SectionTitle>♟️ Turnier-Strategie</SectionTitle>
+            <div style={{ color: 'var(--text-tertiary)', display: 'flex', flexDirection: 'column', gap: 3, fontSize: 10 }}>
+              <p><span style={{ color: 'var(--color-success)' }}>Viele Chips (&gt; 40 BB):</span> normal spielen, Druck auf kurze Stacks ausüben.</p>
+              <p><span style={{ color: 'var(--color-warning)' }}>Mittel (15–40 BB):</span> enger werden, keine großen Pots ohne starke Hand.</p>
+              <p><span style={{ color: 'var(--color-danger)' }}>Kurzer Stack (&lt; 15 BB):</span> <strong style={{ color: 'var(--text-primary)' }}>Push-or-Fold</strong> — mit guter Hand komplett all-in, sonst passen. Kein Limpen.</p>
+              <p style={{ marginTop: 2 }}>💡 <strong style={{ color: 'var(--color-accent)' }}>ICM:</strong> Ein Chip am Anfang ist mehr wert als am Ende. Überleben schlägt oft das kleine Risiko.</p>
+            </div>
+
+            <SectionTitle>🎚️ Einsatzgrößen: ⅓ · ½ · ⅔ · Pot</SectionTitle>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: 10, lineHeight: 1.55, marginBottom: 4 }}>
+              Die Schnell-Knöpfe über dem Einsatz-Regler setzen deinen Einsatz auf einen
+              <strong style={{ color: 'var(--text-primary)' }}> Bruchteil des aktuellen Pots</strong> — die übliche Art,
+              im Poker Größen zu denken. Beispiel bei einem Pot von {formatEuro(100)}:
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {[
+                { label: '⅓ Pot', ex: formatEuro(33), color: 'var(--color-success)', desc: 'Kleiner Einsatz — günstiger Druck, dünne Value-Bets, billige Bluffs.' },
+                { label: '½ Pot', ex: formatEuro(50), color: 'var(--color-primary)', desc: 'Solider Standard — guter Kompromiss aus Druck und Risiko.' },
+                { label: '⅔ Pot', ex: formatEuro(67), color: 'var(--color-warning)', desc: 'Größer — für starke Hände und Draws, gibt Gegnern schlechtere Pot Odds.' },
+                { label: 'Pot',   ex: formatEuro(100), color: 'var(--color-danger)', desc: 'Maximaler Standardeinsatz — maximaler Druck, oft mit Top-Händen oder starken Bluffs.' },
+              ].map(row => (
+                <div key={row.label} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '7px 10px', borderRadius: 9, background: 'var(--surface-inset)', borderLeft: `3px solid ${row.color}` }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: row.color, minWidth: 44, flexShrink: 0 }}>{row.label}</span>
+                  <span style={{ fontSize: 9.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>≈ {row.ex}</strong> — {row.desc}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p style={{ color: 'var(--text-tertiary)', fontSize: 9.5, lineHeight: 1.55, marginTop: 2 }}>
+              Faustregel: Je größer dein Einsatz im Verhältnis zum Pot, desto teurer wird es für Gegner mitzugehen —
+              aber desto mehr riskierst du selbst. Mit dem Regler daneben kannst du jeden Betrag fein einstellen.
+            </p>
           </div>
         )}
 

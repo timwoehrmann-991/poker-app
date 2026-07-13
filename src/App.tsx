@@ -341,7 +341,7 @@ const App: React.FC = () => {
               {rightPanel === 'stats'    && <StatsPanel />}
               {rightPanel === 'history'  && <HandHistoryPanel />}
               {rightPanel === 'review'   && <ReviewPanel />}
-              <RecentHandsBar />
+              {rightPanel !== 'history'  && <RecentHandsBar />}
             </div>
           )}
         </div>
@@ -459,7 +459,7 @@ const App: React.FC = () => {
             {rightPanel === 'stats'    && <StatsPanel />}
             {rightPanel === 'history'  && <HandHistoryPanel />}
               {rightPanel === 'review'   && <ReviewPanel />}
-            <RecentHandsBar />
+            {rightPanel !== 'history'  && <RecentHandsBar />}
           </div>
         )}
 
