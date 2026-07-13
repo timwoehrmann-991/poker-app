@@ -22,7 +22,7 @@ export const ActionBtn: React.FC<ActionBtnProps> = ({ onClick, label, hotkey, di
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        flex: 1, padding: '10px 8px', borderRadius: 11,
+        flex: 1, minWidth: 130, padding: '10px 8px', borderRadius: 11,
         fontWeight: 700, fontSize: 12,
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.35 : 1,

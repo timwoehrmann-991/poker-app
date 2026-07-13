@@ -145,7 +145,7 @@ export const StrategyMatrixContent: React.FC<{ highlight?: MatrixHighlight }> = 
 /** Vollbild-Ansicht mit Zurück-Knopf (Zugang über den Blackjack-Startbildschirm) */
 export const StrategyMatrix: React.FC<{ onBack: () => void }> = ({ onBack }) => (
   <div className="app-ambient" style={{
-    minHeight: '100dvh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+    height: '100dvh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
     padding: '32px 16px 48px', overflowY: 'auto',
   }}>
     <div style={{ width: '100%', maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 14 }}>

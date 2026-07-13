@@ -123,12 +123,16 @@ const App: React.FC = () => {
         </div>
 
         {/* Table — fills all space between top bar and (portrait) bottom nav */}
-        <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-          {/* Odds panel overlay */}
-          {showOdds && (
+        <div style={{
+          flex: 1, minHeight: 0, position: 'relative',
+          display: 'flex', flexDirection: 'column',
+          overflow: mobileIsLandscape ? 'hidden' : 'hidden auto',
+        }}>
+          {/* Odds im Querformat als kompaktes Overlay — im Hochformat als Block unter dem Tisch */}
+          {showOdds && mobileIsLandscape && (
             <div style={{
               position: 'absolute', top: 4, left: 4, zIndex: 20,
-              width: mobileIsLandscape ? 150 : 170,
+              width: 150,
               maxHeight: 'calc(100% - 8px)', overflow: 'hidden auto',
               background: 'var(--surface-panel)', backdropFilter: 'blur(20px)',
               border: '1px solid var(--border-subtle)', borderRadius: 10,
@@ -139,6 +143,16 @@ const App: React.FC = () => {
           )}
 
           <PokerTable />
+
+          {showOdds && !mobileIsLandscape && (
+            <div style={{
+              margin: '6px 6px 10px', flexShrink: 0,
+              background: 'var(--surface-panel)', backdropFilter: 'blur(20px)',
+              border: '1px solid var(--border-subtle)', borderRadius: 12, padding: 8,
+            }}>
+              <OddsPanel />
+            </div>
+          )}
 
           {/* Panel overlay (full-screen modal over the table) */}
           {mobilePanel && (
@@ -289,19 +303,29 @@ const App: React.FC = () => {
         </div>
 
         <div style={{ flex: 1, display: 'flex', minHeight: 0, overflow: 'clip' }}>
-          {/* Center */}
-          <div style={{ flex: 1, minWidth: 0, padding: 6, position: 'relative' }}>
-            {showOdds && (
+          {/* Odds als eigene Spalte im Querformat — nie über dem Tisch */}
+          {showOdds && isLandscape && (
+            <div style={{
+              width: 190, flexShrink: 0, overflow: 'hidden auto',
+              borderRight: '1px solid var(--border-subtle)',
+              background: 'var(--surface-bar)', padding: 8,
+            }}>
+              <OddsPanel />
+            </div>
+          )}
+
+          {/* Center — im Hochformat scrollbar, Odds unter dem Tisch */}
+          <div style={{ flex: 1, minWidth: 0, padding: 6, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden auto' }}>
+            <PokerTable />
+            {showOdds && !isLandscape && (
               <div style={{
-                position: 'absolute', top: 10, left: 10, zIndex: 10,
-                width: 190, maxHeight: 'calc(100% - 20px)', overflow: 'hidden auto',
+                marginTop: 8, flexShrink: 0,
                 background: 'var(--surface-panel)', backdropFilter: 'blur(20px)',
                 border: '1px solid var(--border-subtle)', borderRadius: 12, padding: 8,
               }}>
                 <OddsPanel />
               </div>
             )}
-            <PokerTable />
           </div>
 
           {/* Right panel — narrower on tablet */}

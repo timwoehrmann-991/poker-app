@@ -135,7 +135,7 @@ export const GameSetup: React.FC = () => {
     <div
       className="app-ambient"
       style={{
-        minHeight: '100dvh',
+        height: '100dvh',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
@@ -186,7 +186,7 @@ export const GameSetup: React.FC = () => {
               display: 'flex', alignItems: 'center', gap: 10, boxShadow: 'var(--glass-shadow)',
             }}
           >
-            <span style={{ fontSize: 20 }}>🂡</span>
+            <span style={{ fontSize: 20 }}>🃏</span>
             <span>
               <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>Blackjack</span>
               <span style={{ display: 'block', fontSize: 10, color: 'var(--text-tertiary)' }}>Gegen die Bank — mit Regelheft & Coach</span>

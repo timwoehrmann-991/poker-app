@@ -88,8 +88,8 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
         </>
       )}
 
-      {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
+      {/* Action buttons — brechen auf schmalen Screens in zwei Reihen um */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'stretch', flexWrap: 'wrap' }}>
         {/* Fold */}
         {legalActions.canFold && (
           <ActionBtn

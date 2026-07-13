@@ -14,6 +14,7 @@ import { ActionBtn } from '../ui/ActionBtn';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { SettingsModal } from '../settings/SettingsModal';
 import { useBlackjackSounds } from '../../hooks/useBlackjackSounds';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface BlackjackGameProps {
   onBack: () => void;
@@ -109,7 +110,7 @@ const SetupScreen: React.FC<{
 
   return (
     <div className="app-ambient" style={{
-      minHeight: '100dvh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      height: '100dvh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       padding: '32px 16px 48px', overflowY: 'auto',
     }}>
       <div style={{ width: '100%', maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -118,7 +119,7 @@ const SetupScreen: React.FC<{
             padding: '7px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer',
             background: 'var(--surface-inset)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)',
           }}>← {t('bj.back')}</button>
-          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' }}>🂡 {t('bj.title')}</span>
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' }}>🃏 {t('bj.title')}</span>
           <span style={{ width: 70 }} />
         </div>
 
@@ -224,7 +225,7 @@ const SetupScreen: React.FC<{
             boxShadow: '0 6px 24px rgba(37,160,80,0.35)',
           }}
         >
-          {t('bj.setup.sit')} 🂡
+          {t('bj.setup.sit')} 🃏
         </button>
       </div>
     </div>
@@ -240,6 +241,7 @@ export const BlackjackGame: React.FC<BlackjackGameProps> = ({ onBack }) => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [screen, setScreen] = useState<'game' | 'matrix' | 'quiz'>('game');
+  const isMobile = useIsMobile();
   useBlackjackSounds();
 
   const st = store.state;
@@ -306,37 +308,39 @@ export const BlackjackGame: React.FC<BlackjackGameProps> = ({ onBack }) => {
     { action: 'stand',     label: t('bj.stand'), hotkey: 'H', bg: 'linear-gradient(135deg, #1a7a3a, #25a050)', enabled: legal.canStand },
     { action: 'double',    label: activeHand ? `${t('bj.double')} +${formatEuro(activeHand.bet)}` : t('bj.double'), hotkey: 'V', bg: 'linear-gradient(135deg, #8b6514, #c9a227)', enabled: legal.canDouble },
     { action: 'split',     label: activeHand ? `${t('bj.split')} +${formatEuro(activeHand.bet)}` : t('bj.split'),   hotkey: 'T', bg: 'linear-gradient(135deg, #6e1fa0, #9b38d4)', enabled: legal.canSplit },
-    { action: 'surrender', label: `${t('bj.surrender')} (${t('bj.surrenderHalf')})`, hotkey: 'A', bg: 'linear-gradient(135deg, #5a5a66, #7a7a88)', enabled: legal.canSurrender },
+    { action: 'surrender', label: `${t('bj.surrender')} · ${t('bj.surrenderHalf')}`, hotkey: 'A', bg: 'linear-gradient(135deg, #5a5a66, #7a7a88)', enabled: legal.canSurrender },
   ];
 
   return (
     <div className="app-ambient" style={{
-      minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center',
+      height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '14px 12px 40px', overflowY: 'auto',
     }}>
       <div style={{ width: '100%', maxWidth: 900, display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {/* Kopfzeile */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'nowrap' }}>
           <button onClick={() => setConfirmLeave(true)} style={{
-            padding: '6px 12px', borderRadius: 9, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+            padding: '6px 10px', borderRadius: 9, fontSize: 11, fontWeight: 600, cursor: 'pointer',
             background: 'var(--surface-inset)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)',
-          }}>← {t('bj.leave')}</button>
-          <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)' }}>
-            🂡 {t('bj.title')} · {t('bj.round')} {st.roundNumber}
+            whiteSpace: 'nowrap', flexShrink: 0,
+          }}>← {isMobile ? '' : t('bj.leave')}</button>
+          <span style={{ fontSize: isMobile ? 13 : 14, fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            🃏 {t('bj.title')}{st.roundNumber > 0 ? ` · ${isMobile ? 'R.' : t('bj.round')} ${st.roundNumber}` : ''}
           </span>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
             {coachOn && store.score.total > 0 && (
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>
                 🎓 {store.score.correct}/{store.score.total}
               </span>
             )}
             <button onClick={() => setRulesOpen(v => !v)} style={{
-              padding: '6px 12px', borderRadius: 9, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+              padding: '6px 10px', borderRadius: 9, fontSize: 11, fontWeight: 600, cursor: 'pointer',
               background: rulesOpen ? 'var(--color-accent-soft)' : 'var(--surface-inset)',
               border: rulesOpen ? '1.5px solid var(--color-accent)' : '1px solid var(--border-subtle)',
               color: rulesOpen ? 'var(--color-accent)' : 'var(--text-secondary)',
-            }}>📖 {t('bj.rules')}</button>
+              whiteSpace: 'nowrap',
+            }}>📖{isMobile ? '' : ` ${t('bj.rules')}`}</button>
             <button onClick={() => setSettingsOpen(true)} style={{
               padding: '6px 10px', borderRadius: 9, fontSize: 12, cursor: 'pointer',
               background: 'var(--surface-inset)', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)',
@@ -390,7 +394,7 @@ export const BlackjackGame: React.FC<BlackjackGameProps> = ({ onBack }) => {
                   opacity: store.betAmount > 0 && human.chips > 0 ? 1 : 0.4,
                 }}
               >
-                {t('bj.deal')} 🂡
+                {t('bj.deal')} 🃏
               </button>
               {showRebuy && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
@@ -454,7 +458,7 @@ export const BlackjackGame: React.FC<BlackjackGameProps> = ({ onBack }) => {
                     label={def.label}
                     hotkey={def.hotkey}
                     disabled={!def.enabled}
-                    style={{ background: def.bg, color: '#fff', minWidth: 104 }}
+                    style={{ background: def.bg, color: '#fff', minWidth: 112, flexBasis: isMobile ? '30%' : undefined }}
                   />
                 ))}
               </div>

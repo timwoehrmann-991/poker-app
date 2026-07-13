@@ -10,14 +10,17 @@ const DEALER_POS = { x: 50, y: 12 };
 const TABLE_CENTER = { x: 50, y: 46 };
 
 /** Sitzpositionen auf dem unteren Tischbogen (links → rechts, in %) */
-function seatPositions(count: number): { x: number; y: number }[] {
-  if (count === 1) return [{ x: 50, y: 78 }];
+function seatPositions(count: number, tight: boolean): { x: number; y: number }[] {
+  if (count === 1) return [{ x: 50, y: tight ? 74 : 78 }];
+  // tight (Mobile): Sitze weiter innen, damit Boxen nicht aus dem Bild ragen
+  const rx = tight ? 33 : 40;
+  const ry = tight ? 28 : 34;
   return Array.from({ length: count }, (_, i) => {
     const t = i / (count - 1);
     const angle = Math.PI * (0.83 - 0.66 * t);
     return {
-      x: 50 + 40 * Math.cos(angle),
-      y: 46 + 34 * Math.sin(angle),
+      x: 50 + rx * Math.cos(angle),
+      y: 46 + ry * Math.sin(angle),
     };
   });
 }
@@ -163,10 +166,10 @@ export const BlackjackTable: React.FC<{ state: BJState }> = ({ state }) => {
   const betAmount   = useBlackjackStore(s => s.betAmount);
   const isMobile    = useIsMobile();
 
-  const positions = seatPositions(state.seats.length);
+  const positions = seatPositions(state.seats.length, isMobile);
   const showResults = state.phase === 'payout';
   const betting = state.phase === 'betting';
-  const compact = isMobile && state.seats.length >= 5;
+  const compact = isMobile;
 
   // Austeil-Reihenfolge: erst Runde 1 (Sitz 0..n-1, dann Bank), dann Runde 2.
   // Aktiver Sitz k: Karte 0 = Schritt k, Karte 1 = Schritt n+1+k · Bank: n und 2n+1.
@@ -196,7 +199,7 @@ export const BlackjackTable: React.FC<{ state: BJState }> = ({ state }) => {
     : null;
 
   return (
-    <div style={{ position: 'relative', width: '100%', maxWidth: 860, aspectRatio: '16/10', margin: '0 auto' }}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: 860, aspectRatio: isMobile ? '1/1.05' : '16/10', margin: '0 auto' }}>
       {/* Tisch — identischer Aufbau wie beim Poker */}
       <div style={{
         position: 'absolute', inset: -12, borderRadius: '50%',

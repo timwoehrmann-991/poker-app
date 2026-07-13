@@ -27,3 +27,6 @@ dist
 .DS_Store
 .env
 .vercel
+
+# CI-Workflow lokal geparkt — Git-Token hat keinen workflow-Scope
+.github/workflows/

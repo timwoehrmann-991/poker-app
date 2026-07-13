@@ -128,7 +128,7 @@ export const ScenarioTrainer: React.FC<ScenarioTrainerProps> = ({ onBack }) => {
 
   return (
     <div className="app-ambient" style={{
-      minHeight: '100dvh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      height: '100dvh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       padding: '24px 16px 48px', overflowY: 'auto',
     }}>
       <div style={{ width: '100%', maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 14 }}>
