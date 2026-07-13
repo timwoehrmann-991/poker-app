@@ -16,6 +16,7 @@ export function computeLegalActions(
   lastRaiseSize: number,
   street: Street,
   bigBlind: number,
+  raiseAllowed: boolean = true,
 ): LegalActions {
   const chips = player.chips;
   const currentBet = player.currentBet;
@@ -45,9 +46,9 @@ export function computeLegalActions(
   const minBetAmount = canBet ? Math.min(bigBlind, chips) : 0;
   const maxBetAmount = canBet ? chips : 0;
 
-  // Raise: when there IS a bet and player has enough chips to raise
-  // Must have more than the call amount to raise
-  const canRaise = hasBet && chips > Math.max(toCall, 0);
+  // Raise: when there IS a bet and player has enough chips to raise.
+  // Nach einem Incomplete-All-in-Raise ist Re-Raisen gesperrt (raiseAllowed).
+  const canRaise = hasBet && chips > Math.max(toCall, 0) && raiseAllowed;
   // Min raise total = current highest bet + last raise size (or BB if first raise)
   const effectiveRaiseSize = Math.max(lastRaiseSize, bigBlind);
   const minRaiseTotal = highestBet + effectiveRaiseSize;

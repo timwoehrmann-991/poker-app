@@ -1,15 +1,18 @@
 import React from 'react';
 import { Player, PlayerStatus, Position } from '../../engine/types';
 import { CardComponent } from '../cards/CardComponent';
+import { ChipStack, ChipIcon } from '../ui/ChipStack';
+import { useTranslation } from '../../i18n';
+import { useSettingsStore } from '../../store/settingsStore';
 
 interface PlayerSeatProps {
   player: Player;
   position?: Position;
   isActive: boolean;
-  isDealer: boolean;
   isWinner: boolean;
   isHuman: boolean;
   showCards: boolean;
+  liveStats?: string;
   winAmount?: number;
   timerProgress?: number;
   timerWarning?: boolean;
@@ -32,9 +35,11 @@ const PERSONALITY_EMOJIS: Record<string, string> = {
 };
 
 export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
-  player, position, isActive, isDealer, isWinner, isHuman, showCards, winAmount,
+  player, position, isActive, isWinner, isHuman, showCards, liveStats, winAmount,
   timerProgress, timerWarning, compact = false,
 }) => {
+  const { t } = useTranslation();
+  const showBadges = useSettingsStore(s => s.showPersonalityBadges);
   const isFolded     = player.status === PlayerStatus.Folded;
   const isAllIn      = player.status === PlayerStatus.AllIn;
   const isEliminated = player.status === PlayerStatus.Eliminated;
@@ -45,7 +50,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
     ? (PERSONALITY_COLORS[player.aiPersonality] || '#8e8e93')
     : '#0a84ff';
 
-  let borderColor = 'rgba(255,255,255,0.12)';
+  let borderColor = 'var(--border-subtle)';
   if (isActive) borderColor = 'rgba(10,132,255,0.8)';
   if (isWinner) borderColor = 'rgba(48,209,88,0.8)';
 
@@ -64,20 +69,6 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
         filter: isFolded ? 'grayscale(0.5)' : 'none',
       }}
     >
-      {/* Dealer button */}
-      {isDealer && (
-        <div style={{
-          position: 'absolute', top: -10, right: -10,
-          width: 20, height: 20, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #fff 0%, #e8e8e8 100%)',
-          color: '#000', fontSize: 9, fontWeight: 800,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          border: '2px solid var(--color-accent)',
-          boxShadow: '0 2px 8px rgba(212,166,52,0.5)',
-          zIndex: 5,
-        }}>D</div>
-      )}
-
       {/* Hole cards — on compact mode AI placeholder cards are hidden to save vertical space */}
       {/* Hole cards — tiny in compact mode to save space and avoid overlap */}
       <div style={{ display: 'flex', gap: compact ? 2 : 3, marginBottom: 3, minHeight: compact ? 0 : 44 }}>
@@ -97,7 +88,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
       </div>
 
       {/* ── Badge row — OUTSIDE the overflow:hidden info box so it's never clipped ── */}
-      {(player.aiPersonality || isHuman) && (
+      {((player.aiPersonality && showBadges) || isHuman) && (
         <div style={{
           height: 14,
           display: 'flex',
@@ -107,7 +98,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
           zIndex: 6,
           position: 'relative',
         }}>
-          {player.aiPersonality && (
+          {player.aiPersonality && showBadges && (
             <div style={{
               background: personalityColor,
               borderRadius: 8,
@@ -131,15 +122,16 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
               lineHeight: 1.3,
               whiteSpace: 'nowrap',
               boxShadow: '0 2px 8px rgba(10,132,255,0.4)',
-            }}>YOU</div>
+            }}>{t('ui.you')}</div>
           )}
         </div>
       )}
 
       {/* Info box — no overflow:hidden so nothing inside is ever clipped */}
       <div style={{
-        background: 'rgba(12,12,20,0.88)',
+        background: 'var(--surface-seat)',
         backdropFilter: 'blur(16px)',
+        boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
         border: `1.5px solid ${borderColor}`,
         borderRadius: 10,
         padding: compact ? '4px 7px' : '5px 10px',
@@ -152,7 +144,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
         {timerProgress !== undefined && (
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
-            background: 'rgba(255,255,255,0.1)',
+            background: 'var(--surface-inset)',
             borderRadius: '0 0 10px 10px',
             overflow: 'hidden',
           }}>
@@ -172,7 +164,7 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
 
         {/* Name */}
         <div style={{
-          fontSize: compact ? 10 : 11, fontWeight: 600, color: '#fff',
+          fontSize: compact ? 10 : 11, fontWeight: 600, color: 'var(--text-primary)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           maxWidth: compact ? 64 : 78,
         }}>
@@ -183,14 +175,23 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
         <div style={{
           fontSize: compact ? 11 : 13, fontWeight: 700, color: 'var(--color-accent)',
           fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
         }}>
+          {!compact && <ChipIcon size={9} />}
           €{player.chips.toLocaleString()}
         </div>
 
         {/* Position label — hidden in compact to save space */}
         {position && !compact && (
-          <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)', fontWeight: 700, letterSpacing: '0.08em', marginTop: 1 }}>
+          <div style={{ fontSize: 8, color: 'var(--text-tertiary)', fontWeight: 700, letterSpacing: '0.08em', marginTop: 1 }}>
             {position}
+          </div>
+        )}
+
+        {/* Live-Stats des Bots (ab 10 Händen) — Gegner lesen lernen */}
+        {liveStats && !compact && (
+          <div style={{ fontSize: 7.5, color: 'var(--text-faint)', fontVariantNumeric: 'tabular-nums', marginTop: 1 }}>
+            {liveStats}
           </div>
         )}
 
@@ -201,27 +202,20 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = React.memo(({
             background: 'rgba(255,69,58,0.15)', borderRadius: 5,
             padding: '1px 5px', marginTop: 2, letterSpacing: '0.04em',
           }}>
-            ALL-IN
+            {t('ui.allInBadge')}
           </div>
         )}
         {isFolded && (
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 2, letterSpacing: '0.04em' }}>
-            FOLD
+          <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 2, letterSpacing: '0.04em' }}>
+            {t('ui.foldedBadge')}
           </div>
         )}
       </div>
 
-      {/* Current bet chip */}
+      {/* Current bet as real casino chips */}
       {player.currentBet > 0 && (
-        <div className="chip-animate" style={{ marginTop: 4 }}>
-          <div style={{
-            background: 'rgba(212,166,52,0.2)', border: '1px solid rgba(212,166,52,0.4)',
-            borderRadius: 12, padding: '2px 8px',
-            fontSize: 10, fontWeight: 700, color: 'var(--color-accent)',
-            fontVariantNumeric: 'tabular-nums',
-          }}>
-            €{player.currentBet}
-          </div>
+        <div className="chip-animate" style={{ marginTop: 5 }}>
+          <ChipStack amount={player.currentBet} size={compact ? 11 : 14} />
         </div>
       )}
 

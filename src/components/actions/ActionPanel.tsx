@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { LegalActions, ActionType } from '../../engine/types';
 import { useTranslation } from '../../i18n';
+import { formatEuro } from '../../utils/format';
+import { ActionBtn } from '../ui/ActionBtn';
 
 interface ActionPanelProps {
   legalActions: LegalActions;
@@ -34,13 +36,13 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
 
   return (
     <div style={{
-      background: 'rgba(10,10,18,0.82)',
+      background: 'var(--surface-panel)',
       backdropFilter: 'blur(32px)',
-      border: '1px solid rgba(255,255,255,0.09)',
+      border: '1px solid var(--border-subtle)',
       borderRadius: 18,
       padding: '14px 16px',
       width: '100%',
-      boxShadow: '0 -4px 40px rgba(0,0,0,0.5)',
+      boxShadow: 'var(--glass-shadow)',
     }}>
       {/* Raise controls */}
       {canBetOrRaise && (
@@ -58,11 +60,11 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
                 onClick={() => setQuickBet(frac)}
                 style={{
                   padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600,
-                  background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
-                  color: 'rgba(255,255,255,0.55)', cursor: 'pointer', transition: 'all 0.15s',
+                  background: 'var(--surface-inset)', border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.13)'; e.currentTarget.style.color = '#fff'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = 'rgba(255,255,255,0.55)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-inset-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface-inset)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
               >
                 {label}
               </button>
@@ -71,7 +73,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
 
           {/* Slider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', minWidth: 28, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-tertiary)', minWidth: 28, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
               €{minAmount}
             </span>
             <input
@@ -79,7 +81,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
               onChange={e => setRaiseAmount(Number(e.target.value))}
               style={{ flex: 1, accentColor: 'var(--color-accent)', height: 4 }}
             />
-            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', minWidth: 32, fontVariantNumeric: 'tabular-nums' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-tertiary)', minWidth: 32, fontVariantNumeric: 'tabular-nums' }}>
               €{maxAmount}
             </span>
           </div>
@@ -97,7 +99,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
             style={{
               background: 'rgba(255,69,58,0.12)',
               border: '1.5px solid rgba(255,69,58,0.35)',
-              color: '#ff6b62',
+              color: 'var(--color-danger)',
             }}
             hoverStyle={{ background: 'rgba(255,69,58,0.22)', borderColor: 'rgba(255,69,58,0.6)' }}
           />
@@ -112,7 +114,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
             style={{
               background: 'linear-gradient(135deg, rgba(48,209,88,0.15), rgba(48,209,88,0.08))',
               border: '1.5px solid rgba(48,209,88,0.4)',
-              color: '#4cde84',
+              color: 'var(--color-success)',
               boxShadow: '0 2px 12px rgba(48,209,88,0.1)',
             }}
             hoverStyle={{ background: 'rgba(48,209,88,0.25)', borderColor: 'rgba(48,209,88,0.7)' }}
@@ -123,7 +125,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
         {legalActions.canCall && (
           <ActionBtn
             onClick={() => onAction(ActionType.Call)}
-            label={`${t('action.call')} €${legalActions.callAmount}`}
+            label={`${t('action.call')} ${formatEuro(legalActions.callAmount)}`}
             hotkey="C"
             style={{
               background: 'linear-gradient(135deg, #0a5fa8, #0a84ff)',
@@ -139,7 +141,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
         {canBetOrRaise && (
           <ActionBtn
             onClick={handleBet}
-            label={`${legalActions.canBet ? t('action.bet') : t('action.raise')} €${raiseAmount}`}
+            label={`${legalActions.canBet ? t('action.bet') : t('action.raise')} ${formatEuro(raiseAmount)}`}
             hotkey="R"
             style={{
               background: 'linear-gradient(135deg, #8b6514, #c9a227)',
@@ -155,7 +157,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
         {playerChips > 0 && (
           <ActionBtn
             onClick={() => onAction(ActionType.AllIn)}
-            label={`${t('action.allIn')} €${playerChips}`}
+            label={`${t('action.allIn')} ${formatEuro(playerChips)}`}
             hotkey="A"
             style={{
               background: 'linear-gradient(135deg, #6e1fa0, #9b38d4)',
@@ -169,7 +171,7 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
       </div>
 
       {/* Hotkey hint */}
-      <div style={{ textAlign: 'center', marginTop: 8, fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.05em' }}>
+      <div style={{ textAlign: 'center', marginTop: 8, fontSize: 9, color: 'var(--text-faint)', letterSpacing: '0.05em' }}>
         F · C · R · A
       </div>
     </div>
@@ -178,33 +180,4 @@ export const ActionPanel: React.FC<ActionPanelProps> = React.memo(({
 
 ActionPanel.displayName = 'ActionPanel';
 
-interface ActionBtnProps {
-  onClick: () => void;
-  label: string;
-  hotkey: string;
-  style: React.CSSProperties;
-  hoverStyle: React.CSSProperties;
-}
 
-const ActionBtn: React.FC<ActionBtnProps> = ({ onClick, label, hotkey, style, hoverStyle }) => {
-  const [hovered, setHovered] = React.useState(false);
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        flex: 1, padding: '10px 8px', borderRadius: 11,
-        fontWeight: 700, fontSize: 12, cursor: 'pointer',
-        transition: 'all 0.18s ease',
-        transform: hovered ? 'translateY(-1px) scale(1.02)' : 'none',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-        ...style,
-        ...(hovered ? hoverStyle : {}),
-      }}
-    >
-      <span style={{ fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{label}</span>
-      <span style={{ fontSize: 8, opacity: 0.4, fontWeight: 600 }}>[{hotkey}]</span>
-    </button>
-  );
-};

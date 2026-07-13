@@ -1,9 +1,10 @@
-import { Card, Rank, Suit, HandCategory } from '../engine/types';
+import { Card, Rank, Suit } from '../engine/types';
 import { createFullDeck } from '../engine/deck/Card';
 import { evaluateHand } from '../engine/evaluator/HandEvaluator';
 
 export interface OddsRequest {
   type: 'calculate';
+  requestId: number;
   holeCards: [Card, Card];
   communityCards: Card[];
   numOpponents: number;
@@ -13,10 +14,13 @@ export interface OddsRequest {
 export interface OutInfo {
   drawType: string;
   outs: number;
+  /** Zählt für die Rule-of-4/2-Anzeige (nur echte Draws zur Gewinnerhand) */
+  countsForRule: boolean;
 }
 
 export interface OddsResponse {
   type: 'result';
+  requestId: number;
   winProbability: number;
   tieProbability: number;
   lossProbability: number;
@@ -44,6 +48,7 @@ function calculateOuts(holeCards: [Card, Card], communityCards: Card[]): OutInfo
   const remaining = allCards.filter(c => !knownCards.has(c.id));
 
   let flushOuts = 0;
+  let flushSuit: Suit | null = null;
   let straightOuts = 0;
   let improvementOuts = 0;
 
@@ -56,12 +61,15 @@ function calculateOuts(holeCards: [Card, Card], communityCards: Card[]): OutInfo
   for (const [suit, count] of suitCounts) {
     if (count === 4) {
       flushOuts = remaining.filter(c => c.suit === suit).length;
+      flushSuit = suit;
     }
   }
 
-  // Check for straight draws
+  // Check for straight draws — Karten, die schon als Flush-Outs zählen,
+  // nicht doppelt zählen (Überschneidung Straight-Flush-Karten)
   const ranks = new Set([...holeCards, ...communityCards].map(c => c.rank));
   if (ranks.has(Rank.Ace)) ranks.add(1 as Rank); // Low ace
+  const straightCompleters = new Set<Rank>();
 
   for (let high = 5; high <= 14; high++) {
     let count = 0;
@@ -72,11 +80,14 @@ function calculateOuts(holeCards: [Card, Card], communityCards: Card[]): OutInfo
       else missing.push(rank);
     }
     if (count === 4 && missing.length === 1) {
-      straightOuts += remaining.filter(c => c.rank === missing[0]).length;
+      straightCompleters.add(missing[0]);
     }
   }
+  for (const rank of straightCompleters) {
+    straightOuts += remaining.filter(c => c.rank === rank && c.suit !== flushSuit).length;
+  }
 
-  // General improvement outs
+  // General improvement outs (Kicker etc.) — NICHT Rule-of-4-tauglich
   for (const card of remaining) {
     const newHand = evaluateHand([...holeCards, ...communityCards, card]);
     if (newHand.value > currentHand.value) {
@@ -84,17 +95,17 @@ function calculateOuts(holeCards: [Card, Card], communityCards: Card[]): OutInfo
     }
   }
 
-  if (flushOuts > 0) outs.push({ drawType: 'Flush Draw', outs: flushOuts });
-  if (straightOuts > 0) outs.push({ drawType: 'Straight Draw', outs: Math.min(straightOuts, 8) });
+  if (flushOuts > 0) outs.push({ drawType: 'Flush Draw', outs: flushOuts, countsForRule: true });
+  if (straightOuts > 0) outs.push({ drawType: 'Straight Draw', outs: Math.min(straightOuts, 8), countsForRule: true });
   if (improvementOuts > flushOuts + straightOuts) {
-    outs.push({ drawType: 'Other Improvements', outs: improvementOuts - flushOuts - straightOuts });
+    outs.push({ drawType: 'Weitere Verbesserungen', outs: improvementOuts - flushOuts - straightOuts, countsForRule: false });
   }
 
   return outs;
 }
 
 self.onmessage = (e: MessageEvent<OddsRequest>) => {
-  const { holeCards, communityCards, numOpponents, iterations } = e.data;
+  const { requestId, holeCards, communityCards, numOpponents, iterations } = e.data;
   const startTime = performance.now();
 
   const knownIds = new Set([...holeCards, ...communityCards].map(c => c.id));
@@ -104,6 +115,7 @@ self.onmessage = (e: MessageEvent<OddsRequest>) => {
   let wins = 0;
   let ties = 0;
   let losses = 0;
+  let equitySum = 0;
 
   for (let i = 0; i < iterations; i++) {
     const shuffled = fisherYatesShuffle(remainingDeck);
@@ -118,26 +130,40 @@ self.onmessage = (e: MessageEvent<OddsRequest>) => {
     // Deal opponent hands
     const heroValue = evaluateHand([...holeCards, ...board]).value;
     let bestOpp = 0;
+    let tiedOpponents = 0;
 
     for (let o = 0; o < numOpponents; o++) {
       const oppHand: [Card, Card] = [shuffled[idx++], shuffled[idx++]];
       const oppValue = evaluateHand([...oppHand, ...board]).value;
-      bestOpp = Math.max(bestOpp, oppValue);
+      if (oppValue > bestOpp) {
+        bestOpp = oppValue;
+        tiedOpponents = 1;
+      } else if (oppValue === bestOpp) {
+        tiedOpponents++;
+      }
     }
 
-    if (heroValue > bestOpp) wins++;
-    else if (heroValue === bestOpp) ties++;
-    else losses++;
+    if (heroValue > bestOpp) {
+      wins++;
+      equitySum += 1;
+    } else if (heroValue === bestOpp) {
+      // Split-Pot: Anteil ist 1/(Anzahl der Gewinner), nicht pauschal 1/2
+      ties++;
+      equitySum += 1 / (1 + tiedOpponents);
+    } else {
+      losses++;
+    }
   }
 
   const outs = calculateOuts(holeCards, communityCards);
 
   const response: OddsResponse = {
     type: 'result',
+    requestId,
     winProbability: wins / iterations,
     tieProbability: ties / iterations,
     lossProbability: losses / iterations,
-    equity: (wins + ties * 0.5) / iterations,
+    equity: equitySum / iterations,
     outs,
     calculationTimeMs: performance.now() - startTime,
   };

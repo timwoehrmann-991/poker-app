@@ -1,36 +1,53 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════
-   Apple Vision Pro 2030 Design System
+   Poker Design System — semantische Tokens, 4 Themes, Ambiente
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* === Background Layers === */
-  --color-bg: #000000;
+  /* === Hintergrund-Ebenen === */
+  --color-bg: #050508;
   --color-bg-deep: #05050a;
   --color-bg-secondary: #0d0d14;
-  --color-bg-panel: rgba(18, 18, 28, 0.9);
+  --color-bg-panel: rgba(16, 16, 26, 0.88);
   --color-bg-elevated: rgba(28, 28, 42, 0.95);
+
+  /* === Oberflächen (Panels, Bars, Boxen) === */
+  --surface-bar: rgba(8, 8, 14, 0.72);
+  --surface-panel: rgba(12, 12, 20, 0.82);
+  --surface-seat: rgba(10, 10, 18, 0.9);
+  --surface-inset: rgba(255, 255, 255, 0.05);
+  --surface-inset-hover: rgba(255, 255, 255, 0.11);
+
+  /* === Ränder === */
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-border-bright: rgba(255, 255, 255, 0.18);
 
   /* === Glassmorphism === */
   --glass-bg: rgba(255, 255, 255, 0.04);
   --glass-bg-hover: rgba(255, 255, 255, 0.07);
-  --glass-border: rgba(255, 255, 255, 0.09);
-  --glass-border-bright: rgba(255, 255, 255, 0.18);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   --glass-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.7);
   --glass-inset: inset 0 1px 1px rgba(255, 255, 255, 0.07);
 
-  /* === Table === */
-  --color-felt: #0c3320;
-  --color-felt-dark: #061910;
-  --color-felt-light: #154d2e;
-  --color-table-border: #8B6914;
-  --color-table-border-inner: #6b4a10;
+  /* === Tisch === */
+  --color-felt: #0d3a24;
+  --color-felt-dark: #071f12;
+  --color-felt-light: #17583a;
+  --felt-ring: rgba(255, 255, 255, 0.07);
+  --felt-text: rgba(255, 255, 255, 0.4);
+  --felt-text-soft: rgba(255, 255, 255, 0.22);
+  --rail-outer: linear-gradient(145deg, #d4af37 0%, #8b6514 35%, #e8c860 55%, #6b4a10 100%);
+  --rail-wood: linear-gradient(145deg, #40260a, #1c0f04, #4e300c);
+  --table-logo: rgba(255, 255, 255, 0.06);
 
-  /* === Apple Accent Colors === */
-  --color-accent: #d4a634;
-  --color-accent-hover: #e6b83e;
+  /* === Akzentfarben === */
+  --color-accent: #e3b64a;
+  --color-accent-hover: #f0c65c;
+  --color-accent-soft: rgba(227, 182, 74, 0.14);
+  --color-accent-border: rgba(227, 182, 74, 0.4);
   --color-primary: #0a84ff;
   --color-primary-glow: rgba(10, 132, 255, 0.35);
   --color-success: #30d158;
@@ -42,43 +59,224 @@
   --color-purple: #bf5af2;
 
   /* === Text === */
-  --color-text: #e5e5ea;
+  --color-text: #e8e8ee;
   --color-text-muted: #8e8e93;
   --color-text-bright: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-tertiary: rgba(255, 255, 255, 0.38);
+  --text-faint: rgba(255, 255, 255, 0.2);
 
-  /* === Cards === */
-  --color-card-bg: #ffffff;
-  --color-card-border: rgba(0, 0, 0, 0.1);
-  --color-card-red: #ff3b30;
-  --color-card-black: #1c1c1e;
+  /* === Karten === */
+  --color-card-bg: #fdfdfb;
+  --color-card-bg-2: #f2f0ea;
+  --color-card-border: rgba(0, 0, 0, 0.14);
+  --color-card-red: #d92b2b;
+  --color-card-black: #1c1c22;
+  --card-back-1: #1e3a8a;
+  --card-back-2: #172d6e;
+  --card-back-3: #0f1f4d;
+  --card-back-border: #3b528f;
 
-  /* === Glow Effects === */
+  /* === Glow === */
   --color-glow-active: rgba(10, 132, 255, 0.5);
   --color-glow-winner: rgba(48, 209, 88, 0.7);
+
+  /* === Ambiente-Hintergrund (Standard: Mitternacht) === */
+  --ambient-bg:
+    radial-gradient(ellipse 90% 70% at 50% -10%, rgba(23, 88, 58, 0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 12% 85%, rgba(10, 60, 120, 0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 80%, rgba(120, 70, 10, 0.1) 0%, transparent 60%),
+    linear-gradient(180deg, #08080f 0%, #050508 60%, #030304 100%);
 }
 
-/* ── Theme Variants ─────────────────────────────────────────── */
+/* ── Theme: Casino Royal (klassisches Grün, warm) ─────────────── */
 [data-theme="casino-classic"] {
-  --color-felt: #1a5a30;
-  --color-felt-dark: #0f3d1a;
-  --color-felt-light: #2a7a40;
-  --color-bg: #0e0a18;
-  --color-bg-secondary: #130f1e;
-  --color-bg-panel: rgba(22, 16, 35, 0.9);
-  --color-accent: #c9a227;
-  --color-table-border: #6b4a10;
+  --color-felt: #14532d;
+  --color-felt-dark: #0b2e18;
+  --color-felt-light: #1f7a42;
+  --color-bg: #100a16;
+  --color-bg-secondary: #16101e;
+  --color-bg-panel: rgba(24, 16, 34, 0.9);
+  --surface-bar: rgba(16, 10, 22, 0.78);
+  --surface-panel: rgba(22, 15, 32, 0.85);
+  --surface-seat: rgba(18, 12, 28, 0.92);
+  --color-accent: #d4a634;
+  --color-accent-soft: rgba(212, 166, 52, 0.14);
+  --color-accent-border: rgba(212, 166, 52, 0.4);
+  --rail-outer: linear-gradient(145deg, #b8860b 0%, #7a5208 35%, #d4a634 55%, #5c3d06 100%);
+  --ambient-bg:
+    radial-gradient(ellipse 100% 80% at 50% -20%, rgba(120, 40, 60, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 85% 90%, rgba(90, 50, 130, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 10% 75%, rgba(150, 100, 20, 0.1) 0%, transparent 60%),
+    linear-gradient(180deg, #140c1c 0%, #0e0814 60%, #080510 100%);
 }
 
+/* ── Theme: Ocean (tiefes Blau) ───────────────────────────────── */
 [data-theme="casino-blue"] {
-  --color-felt: #0d2a4a;
-  --color-felt-dark: #071825;
-  --color-felt-light: #163d6a;
-  --color-bg: #020810;
+  --color-felt: #0e3050;
+  --color-felt-dark: #071b2e;
+  --color-felt-light: #17497a;
+  --color-bg: #030810;
   --color-bg-secondary: #060d18;
   --color-bg-panel: rgba(8, 14, 28, 0.9);
-  --color-accent: #4facff;
-  --color-primary: #4facff;
-  --color-table-border: #1a3a5c;
+  --surface-bar: rgba(4, 10, 20, 0.78);
+  --surface-panel: rgba(7, 13, 26, 0.85);
+  --surface-seat: rgba(5, 11, 22, 0.92);
+  --color-accent: #5cb2ff;
+  --color-accent-soft: rgba(92, 178, 255, 0.14);
+  --color-accent-border: rgba(92, 178, 255, 0.4);
+  --color-primary: #5cb2ff;
+  --rail-outer: linear-gradient(145deg, #8fa8c8 0%, #43597a 35%, #a8c0e0 55%, #2e405c 100%);
+  --rail-wood: linear-gradient(145deg, #16222e, #0a1218, #1a2a3a);
+  --ambient-bg:
+    radial-gradient(ellipse 90% 70% at 50% -10%, rgba(20, 80, 150, 0.25) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 15% 90%, rgba(10, 120, 140, 0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 88% 75%, rgba(60, 40, 140, 0.12) 0%, transparent 60%),
+    linear-gradient(180deg, #041018 0%, #03080f 60%, #020508 100%);
+}
+
+/* ── Theme: Daylight (sehr hell — Tageslicht-Lounge) ──────────── */
+[data-theme="daylight"] {
+  --color-bg: #eef0f4;
+  --color-bg-deep: #e4e7ed;
+  --color-bg-secondary: #f5f6f9;
+  --color-bg-panel: rgba(255, 255, 255, 0.88);
+  --color-bg-elevated: rgba(255, 255, 255, 0.97);
+
+  --surface-bar: rgba(255, 255, 255, 0.8);
+  --surface-panel: rgba(255, 255, 255, 0.85);
+  --surface-seat: rgba(255, 255, 255, 0.94);
+  --surface-inset: rgba(20, 30, 50, 0.06);
+  --surface-inset-hover: rgba(20, 30, 50, 0.12);
+
+  --border-subtle: rgba(20, 30, 50, 0.12);
+  --border-strong: rgba(20, 30, 50, 0.22);
+  --glass-border: rgba(20, 30, 50, 0.12);
+  --glass-border-bright: rgba(20, 30, 50, 0.22);
+
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-hover: rgba(255, 255, 255, 0.75);
+  --glass-shadow: 0 8px 32px rgba(40, 50, 80, 0.12);
+  --glass-shadow-lg: 0 20px 60px rgba(40, 50, 80, 0.18);
+  --glass-inset: inset 0 1px 1px rgba(255, 255, 255, 0.9);
+
+  --color-felt: #2e8b57;
+  --color-felt-dark: #1f6b40;
+  --color-felt-light: #48a870;
+  --felt-ring: rgba(255, 255, 255, 0.22);
+  --rail-outer: linear-gradient(145deg, #e8d8b0 0%, #c8a860 35%, #f4e8c8 55%, #b09048 100%);
+  --rail-wood: linear-gradient(145deg, #9a7040, #7a5628, #a87c48);
+  --table-logo: rgba(255, 255, 255, 0.18);
+
+  --color-accent: #b8860b;
+  --color-accent-hover: #9a7009;
+  --color-accent-soft: rgba(184, 134, 11, 0.12);
+  --color-accent-border: rgba(184, 134, 11, 0.35);
+  --color-primary: #0066cc;
+  --color-success: #1a9944;
+  --color-danger: #d63030;
+  --color-warning: #cc7a00;
+  --color-purple: #8b3fc9;
+
+  --color-text: #1c2333;
+  --color-text-muted: #5c6478;
+  --color-text-bright: #0a0f1a;
+  --text-primary: #101624;
+  --text-secondary: rgba(16, 22, 36, 0.65);
+  --text-tertiary: rgba(16, 22, 36, 0.45);
+  --text-faint: rgba(16, 22, 36, 0.28);
+
+  --color-card-bg: #ffffff;
+  --color-card-bg-2: #f6f4ee;
+  --color-card-border: rgba(0, 0, 0, 0.16);
+  --card-back-1: #3563b8;
+  --card-back-2: #2a4f96;
+  --card-back-3: #1e3a70;
+  --card-back-border: #5478b8;
+
+  --ambient-bg:
+    radial-gradient(ellipse 100% 70% at 50% -15%, rgba(255, 240, 200, 0.9) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 10% 90%, rgba(180, 210, 250, 0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 55% at 92% 80%, rgba(250, 215, 180, 0.45) 0%, transparent 60%),
+    linear-gradient(180deg, #f8f6f0 0%, #edeff4 55%, #e2e6ee 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Tischfarben (per data-felt wählbar, themeübergreifend)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hellbeige — heller Filz, Beschriftung auf dem Tisch wird dunkel */
+[data-felt="beige"] {
+  --color-felt: #d8c9a5;
+  --color-felt-dark: #b3a077;
+  --color-felt-light: #eadfc2;
+  --felt-ring: rgba(90, 70, 40, 0.28);
+  --felt-text: rgba(70, 55, 30, 0.55);
+  --felt-text-soft: rgba(70, 55, 30, 0.35);
+  --table-logo: rgba(70, 55, 30, 0.14);
+}
+
+/* Blau — klassischer Casino-Blaufilz */
+[data-felt="blau"] {
+  --color-felt: #14456e;
+  --color-felt-dark: #0a2740;
+  --color-felt-light: #1f639a;
+}
+
+/* Bordeaux — dunkelroter Filz */
+[data-felt="bordeaux"] {
+  --color-felt: #6b1f2e;
+  --color-felt-dark: #40111c;
+  --color-felt-light: #8e2f42;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Ambiente-Hintergründe (per data-bg wählbar, themeübergreifend)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Bokeh: unscharfe Casino-Lichter */
+[data-bg="bokeh"] {
+  --ambient-bg:
+    radial-gradient(circle 90px at 12% 18%, rgba(227, 182, 74, 0.16) 0%, transparent 100%),
+    radial-gradient(circle 60px at 26% 74%, rgba(255, 120, 80, 0.1) 0%, transparent 100%),
+    radial-gradient(circle 120px at 82% 22%, rgba(120, 90, 220, 0.12) 0%, transparent 100%),
+    radial-gradient(circle 70px at 90% 68%, rgba(48, 180, 120, 0.1) 0%, transparent 100%),
+    radial-gradient(circle 50px at 60% 88%, rgba(227, 182, 74, 0.09) 0%, transparent 100%),
+    radial-gradient(circle 40px at 40% 10%, rgba(255, 255, 255, 0.05) 0%, transparent 100%),
+    radial-gradient(ellipse 120% 90% at 50% 45%, rgba(14, 14, 24, 0.4) 0%, transparent 100%),
+    linear-gradient(180deg, #0a0a14 0%, #060609 100%);
+}
+[data-theme="daylight"][data-bg="bokeh"] {
+  --ambient-bg:
+    radial-gradient(circle 100px at 12% 18%, rgba(255, 200, 90, 0.35) 0%, transparent 100%),
+    radial-gradient(circle 70px at 26% 74%, rgba(120, 180, 255, 0.3) 0%, transparent 100%),
+    radial-gradient(circle 130px at 82% 22%, rgba(255, 160, 130, 0.28) 0%, transparent 100%),
+    radial-gradient(circle 80px at 90% 68%, rgba(140, 220, 170, 0.3) 0%, transparent 100%),
+    linear-gradient(180deg, #faf7f0 0%, #eceef4 100%);
+}
+
+/* Sunset: warmer Abendhimmel */
+[data-bg="sunset"] {
+  --ambient-bg:
+    radial-gradient(ellipse 120% 60% at 50% 110%, rgba(200, 80, 30, 0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 50% at 50% 100%, rgba(160, 40, 80, 0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 80% at 50% -20%, rgba(30, 20, 60, 0.5) 0%, transparent 70%),
+    linear-gradient(180deg, #0c0a1e 0%, #1a0f1e 55%, #2a1216 100%);
+}
+[data-theme="daylight"][data-bg="sunset"] {
+  --ambient-bg:
+    radial-gradient(ellipse 120% 60% at 50% 110%, rgba(255, 170, 100, 0.55) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 50% at 50% 100%, rgba(255, 130, 150, 0.35) 0%, transparent 70%),
+    linear-gradient(180deg, #dce8f8 0%, #f4e2d8 55%, #fad8c0 100%);
+}
+
+/* Minimal: ruhig und reduziert */
+[data-bg="minimal"] {
+  --ambient-bg: linear-gradient(180deg, #0b0b10 0%, #060608 100%);
+}
+[data-theme="daylight"][data-bg="minimal"] {
+  --ambient-bg: linear-gradient(180deg, #f4f5f8 0%, #e8eaef 100%);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -105,17 +303,31 @@ body {
   color: var(--color-text);
 }
 
+/* App-Hintergrund mit Ambiente + feinem Rauschen für "echte" Tiefe */
+.app-ambient {
+  background: var(--ambient-bg);
+  position: relative;
+}
+.app-ambient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 /* ═══════════════════════════════════════════════════════════════
    Scrollbar
    ═══════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--border-strong);
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--text-tertiary);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -139,18 +351,28 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Table Felt
+   Table Felt — Filz mit Textur und Lichtkegel
    ═══════════════════════════════════════════════════════════════ */
 
 .felt-texture {
   background: var(--color-felt);
   background-image:
     radial-gradient(
-      ellipse 110% 90% at 50% 40%,
+      ellipse 110% 90% at 50% 38%,
       var(--color-felt-light) 0%,
-      var(--color-felt) 45%,
+      var(--color-felt) 48%,
       var(--color-felt-dark) 100%
     );
+  position: relative;
+}
+.felt-texture::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -212,6 +434,40 @@ body {
   animation: pulse-glow-green 1.5s ease-in-out infinite;
 }
 
+/* Daylight: Glow ist ein Dunkelheits-Phänomen — bei Tageslicht
+   markieren Border + weicher Schatten den aktiven Spieler */
+[data-theme="daylight"] .active-glow {
+  animation: none;
+  box-shadow: 0 0 0 2px var(--color-primary), 0 6px 18px rgba(0, 102, 204, 0.25);
+}
+[data-theme="daylight"] .winner-glow {
+  animation: none;
+  box-shadow: 0 0 0 2px var(--color-success), 0 6px 18px rgba(26, 153, 68, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Zugänglichkeit: Systemeinstellungen respektieren
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Tastatur-Fokus sichtbar machen (App bewirbt Hotkeys F/C/R/A) */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+button:active {
+  transform: scale(0.985);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    Chip & UI Animations
    ═══════════════════════════════════════════════════════════════ */
@@ -219,6 +475,48 @@ body {
 @keyframes chip-slide-in {
   from { opacity: 0; transform: translateY(-12px) scale(0.75); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Chips fliegen über den Tisch — Ziel via CSS-Variablen pro Element */
+@keyframes fly-chips {
+  0%   { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { left: var(--fly-to-x); top: var(--fly-to-y); opacity: 0; }
+}
+.fly-chips {
+  animation: fly-chips 0.5s cubic-bezier(0.4, 0.1, 0.6, 1) forwards;
+}
+
+/* Hole-Card-Aufdecken: einachsiger Flip (robust ohne 3D-Backface) */
+@keyframes flip-reveal {
+  0%   { transform: rotateY(88deg); }
+  100% { transform: rotateY(0deg); }
+}
+.flip-reveal {
+  animation: flip-reveal 0.45s cubic-bezier(0.3, 0.9, 0.4, 1);
+  transform-origin: left center;
+}
+
+/* Bet-Box pulsiert in der Einsatz-Phase */
+@keyframes bet-box-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(227, 182, 74, 0.0); border-color: var(--felt-ring); }
+  50%      { box-shadow: 0 0 12px 2px rgba(227, 182, 74, 0.35); border-color: var(--color-accent-border); }
+}
+.bet-box-pulse {
+  animation: bet-box-pulse 1.6s ease-in-out infinite;
+}
+
+/* Karten werden zum Rundenende abgeräumt */
+@keyframes card-clear {
+  to { opacity: 0; transform: translateY(-26px) rotate(4deg); }
+}
+.card-clear {
+  animation: card-clear 0.35s ease-in forwards;
+}
+
+/* Dealer-Button gleitet zum nächsten Sitz */
+.dealer-button-anim {
+  transition: left 0.7s cubic-bezier(0.35, 0.9, 0.4, 1), top 0.7s cubic-bezier(0.35, 0.9, 0.4, 1);
 }
 
 .chip-animate {
@@ -266,13 +564,9 @@ body {
 .suit-black { color: var(--color-card-black); }
 
 /* ═══════════════════════════════════════════════════════════════
-   Spatial Ambient Background (for setup / modal screens)
+   Spatial Ambient Background (Setup-Screen)
    ═══════════════════════════════════════════════════════════════ */
 
 .spatial-bg {
-  background:
-    radial-gradient(ellipse 80% 60% at 15% 20%, rgba(10, 132, 255, 0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 85% 80%, rgba(191, 90, 242, 0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 120% 80% at 50% 50%, rgba(20, 20, 35, 0.6) 0%, transparent 100%),
-    var(--color-bg);
+  background: var(--ambient-bg);
 }

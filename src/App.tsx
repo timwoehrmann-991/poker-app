@@ -10,8 +10,11 @@ import { HandHistoryPanel } from './components/history/HandHistoryPanel';
 import { StatsPanel } from './components/stats/StatsPanel';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { RecentHandsBar } from './components/ui/RecentHandsBar';
+import { ReviewPanel } from './components/review/ReviewPanel';
+import { useTranslation } from './i18n';
+import { ConfirmDialog } from './components/ui/ConfirmDialog';
 
-type RightPanel = 'tutorial' | 'history' | 'chat' | 'stats' | null;
+type RightPanel = 'tutorial' | 'history' | 'chat' | 'stats' | 'review' | null;
 
 function useWindowSize() {
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight });
@@ -24,12 +27,16 @@ function useWindowSize() {
 }
 
 const App: React.FC = () => {
-  const isGameStarted = useGameStore(s => s.isGameStarted);
-  const colorScheme   = useSettingsStore(s => s.colorScheme);
-  const showOdds      = useSettingsStore(s => s.showOddsCalculator);
-  const gameState     = useGameStore(s => s.gameState);
+  const isGameStarted   = useGameStore(s => s.isGameStarted);
+  const colorScheme     = useSettingsStore(s => s.colorScheme);
+  const tableBackground = useSettingsStore(s => s.tableBackground);
+  const feltColor       = useSettingsStore(s => s.feltColor);
+  const showOdds        = useSettingsStore(s => s.showOddsCalculator);
+  const gameState       = useGameStore(s => s.gameState);
 
+  const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
   const [rightPanel, setRightPanel]     = useState<RightPanel>('tutorial');
   const [mobilePanel, setMobilePanel]   = useState<RightPanel>(null);
 
@@ -40,15 +47,23 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorScheme);
-  }, [colorScheme]);
+    document.documentElement.setAttribute('data-bg', tableBackground);
+    document.documentElement.setAttribute('data-felt', feltColor);
+  }, [colorScheme, tableBackground, feltColor]);
+
+  // Persistierte Hand-Historie einmalig laden
+  useEffect(() => {
+    void useGameStore.getState().loadHistory();
+  }, []);
 
   if (!isGameStarted) return <GameSetup />;
 
   const panels: { id: RightPanel; icon: string; label: string }[] = [
-    { id: 'tutorial', icon: '📖', label: 'Tutorial' },
-    { id: 'chat',     icon: '💬', label: 'Chat' },
-    { id: 'stats',    icon: '📈', label: 'Stats' },
-    { id: 'history',  icon: '📋', label: 'History' },
+    { id: 'tutorial', icon: '📖', label: t('ui.panelTutorial') },
+    { id: 'chat',     icon: '💬', label: t('ui.panelChat') },
+    { id: 'review',   icon: '🎯', label: t('ui.panelReview') },
+    { id: 'stats',    icon: '📈', label: t('ui.panelStats') },
+    { id: 'history',  icon: '📋', label: t('ui.panelHistory') },
   ];
 
   // Active AI player check for skip button visibility
@@ -64,27 +79,26 @@ const App: React.FC = () => {
     const mobileIsLandscape = isLandscape;
     const btnStyle = (active: boolean): React.CSSProperties => ({
       padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-      border: '1px solid ' + (active ? 'rgba(212,166,52,0.4)' : 'rgba(255,255,255,0.12)'),
-      background: active ? 'rgba(212,166,52,0.12)' : 'transparent',
-      color: active ? 'var(--color-accent)' : 'rgba(255,255,255,0.45)',
+      border: '1px solid ' + (active ? 'var(--color-accent-border)' : 'var(--border-subtle)'),
+      background: active ? 'var(--color-accent-soft)' : 'transparent',
+      color: active ? 'var(--color-accent)' : 'var(--text-tertiary)',
       cursor: 'pointer', touchAction: 'manipulation',
     });
 
     return (
-      <div style={{ width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)', overflow: 'hidden' }}>
+      <div className="app-ambient" style={{ width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Top bar — in landscape, panel buttons live here to save vertical space */}
         <div style={{
           height: 40, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 8px',
-          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          padding: '0 8px', position: 'relative', zIndex: 10,
+          background: 'var(--surface-bar)', backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid var(--border-subtle)',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>♠ Poker</span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>♠ Poker</span>
 
           <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-            {/* Panel buttons — always visible in landscape, hidden in portrait (use bottom nav) */}
             {mobileIsLandscape && panels.map(p => (
               <button
                 key={p.id}
@@ -99,11 +113,11 @@ const App: React.FC = () => {
             >📊</button>
             <button
               onClick={() => setSettingsOpen(true)}
-              style={{ padding: '3px 8px', borderRadius: 6, fontSize: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', cursor: 'pointer', touchAction: 'manipulation' }}
+              style={{ padding: '3px 8px', borderRadius: 6, fontSize: 12, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-tertiary)', cursor: 'pointer', touchAction: 'manipulation' }}
             >⚙️</button>
             <button
-              onClick={() => { if (confirm('Zurück zum Hauptmenü?')) useGameStore.setState({ isGameStarted: false, gameState: null, controller: null }); }}
-              style={{ padding: '3px 7px', borderRadius: 6, fontSize: 11, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', touchAction: 'manipulation' }}
+              onClick={() => setLeaveConfirmOpen(true)}
+              style={{ padding: '3px 7px', borderRadius: 6, fontSize: 11, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-faint)', cursor: 'pointer', touchAction: 'manipulation' }}
             >✕</button>
           </div>
         </div>
@@ -116,8 +130,8 @@ const App: React.FC = () => {
               position: 'absolute', top: 4, left: 4, zIndex: 20,
               width: mobileIsLandscape ? 150 : 170,
               maxHeight: 'calc(100% - 8px)', overflow: 'hidden auto',
-              background: 'rgba(8,8,14,0.92)', backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10,
+              background: 'var(--surface-panel)', backdropFilter: 'blur(20px)',
+              border: '1px solid var(--border-subtle)', borderRadius: 10,
               padding: 6,
             }}>
               <OddsPanel />
@@ -130,7 +144,7 @@ const App: React.FC = () => {
           {mobilePanel && (
             <div style={{
               position: 'absolute', inset: 0, zIndex: 30,
-              background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(24px)',
+              background: 'var(--color-bg-panel)', backdropFilter: 'blur(24px)',
               display: 'flex', flexDirection: 'column',
               overflow: 'hidden',
             }}>
@@ -139,26 +153,25 @@ const App: React.FC = () => {
                 flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '10px 12px',
-                borderBottom: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(0,0,0,0.4)',
+                borderBottom: '1px solid var(--border-subtle)',
+                background: 'var(--surface-bar)',
               }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
                   {panels.find(p => p.id === mobilePanel)?.icon}&nbsp;&nbsp;{panels.find(p => p.id === mobilePanel)?.label}
                 </span>
-                {/* Large, clearly labelled close button */}
                 <button
                   onClick={() => setMobilePanel(null)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '6px 14px', borderRadius: 20,
-                    background: 'rgba(255,255,255,0.12)',
-                    border: '1px solid rgba(255,255,255,0.22)',
-                    color: '#fff', fontSize: 12, fontWeight: 700,
+                    background: 'var(--surface-inset-hover)',
+                    border: '1px solid var(--border-strong)',
+                    color: 'var(--text-primary)', fontSize: 12, fontWeight: 700,
                     cursor: 'pointer', touchAction: 'manipulation',
                     letterSpacing: '0.03em',
                   }}
                 >
-                  ✕ Schließen
+                  ✕ {t('ui.close')}
                 </button>
               </div>
               <div style={{ flex: 1, overflow: 'hidden auto', padding: '8px 10px' }}>
@@ -166,6 +179,7 @@ const App: React.FC = () => {
                 {mobilePanel === 'chat'     && <StrategyChat />}
                 {mobilePanel === 'stats'    && <StatsPanel />}
                 {mobilePanel === 'history'  && <HandHistoryPanel />}
+                {mobilePanel === 'review'   && <ReviewPanel />}
               </div>
             </div>
           )}
@@ -176,10 +190,10 @@ const App: React.FC = () => {
           <div style={{
             flexShrink: 0,
             display: 'flex', alignItems: 'center',
-            background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(20px)',
-            borderTop: '1px solid rgba(255,255,255,0.07)',
+            background: 'var(--surface-bar)', backdropFilter: 'blur(20px)',
+            borderTop: '1px solid var(--border-subtle)',
             padding: '0 2px',
-            height: 50,
+            height: 50, position: 'relative', zIndex: 10,
           }}>
             {panels.map(p => (
               <button
@@ -189,7 +203,7 @@ const App: React.FC = () => {
                   flex: 1, height: '100%',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
                   background: 'transparent', border: 'none', cursor: 'pointer', touchAction: 'manipulation',
-                  color: mobilePanel === p.id ? 'var(--color-accent)' : 'rgba(255,255,255,0.4)',
+                  color: mobilePanel === p.id ? 'var(--color-accent)' : 'var(--text-tertiary)',
                   borderTop: mobilePanel === p.id ? '2px solid var(--color-accent)' : '2px solid transparent',
                   transition: 'color 0.15s',
                 }}
@@ -221,7 +235,15 @@ const App: React.FC = () => {
           >⏭</button>
         )}
 
-        <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        <ConfirmDialog
+        open={leaveConfirmOpen}
+        message={t('ui.backToMenu')}
+        confirmLabel={t('ui.mainMenu')}
+        cancelLabel={t('ui.close')}
+        onConfirm={() => { setLeaveConfirmOpen(false); useGameStore.getState().leaveGame(); }}
+        onCancel={() => setLeaveConfirmOpen(false)}
+      />
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       </div>
     );
   }
@@ -229,39 +251,39 @@ const App: React.FC = () => {
   // ─── TABLET LAYOUT (640–1023px) ───────────────────────────────────────────
   if (isTablet) {
     return (
-      <div style={{ width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)', overflow: 'hidden' }}>
+      <div className="app-ambient" style={{ width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* Top bar */}
         <div style={{
           height: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 12px', flexShrink: 0,
-          background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(24px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          padding: '0 12px', flexShrink: 0, position: 'relative', zIndex: 10,
+          background: 'var(--surface-bar)', backdropFilter: 'blur(24px)',
+          borderBottom: '1px solid var(--border-subtle)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>♠ Poker</span>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.12)' }} />
+            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>♠ Poker</span>
+            <div style={{ width: 1, height: 16, background: 'var(--border-strong)' }} />
             {panels.map(p => (
               <button key={p.id}
                 onClick={() => setRightPanel(rightPanel === p.id ? null : p.id)}
                 style={{
                   padding: '3px 9px', borderRadius: 7, fontSize: 11, fontWeight: 600,
                   border: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                  background: rightPanel === p.id ? 'rgba(212,166,52,0.18)' : 'transparent',
-                  color: rightPanel === p.id ? 'var(--color-accent)' : 'rgba(255,255,255,0.4)',
+                  background: rightPanel === p.id ? 'var(--color-accent-soft)' : 'transparent',
+                  color: rightPanel === p.id ? 'var(--color-accent)' : 'var(--text-tertiary)',
                 }}
               >{p.icon} {p.label}</button>
             ))}
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             <button onClick={() => useSettingsStore.getState().setShowOddsCalculator(!showOdds)}
-              style={{ padding: '3px 9px', borderRadius: 7, fontSize: 11, fontWeight: 600, border: '1px solid ' + (showOdds ? 'rgba(48,209,88,0.4)' : 'rgba(255,255,255,0.1)'), background: showOdds ? 'rgba(48,209,88,0.12)' : 'transparent', color: showOdds ? '#30d158' : 'rgba(255,255,255,0.4)', cursor: 'pointer' }}
+              style={{ padding: '3px 9px', borderRadius: 7, fontSize: 11, fontWeight: 600, border: '1px solid ' + (showOdds ? 'rgba(48,209,88,0.4)' : 'var(--border-subtle)'), background: showOdds ? 'rgba(48,209,88,0.12)' : 'transparent', color: showOdds ? 'var(--color-success)' : 'var(--text-tertiary)', cursor: 'pointer' }}
             >📊 Odds</button>
             <button onClick={() => setSettingsOpen(true)}
-              style={{ padding: '3px 9px', borderRadius: 7, fontSize: 13, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}
+              style={{ padding: '3px 9px', borderRadius: 7, fontSize: 13, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', cursor: 'pointer' }}
             >⚙️</button>
-            <button onClick={() => { if (confirm('Zurück zum Hauptmenü?')) useGameStore.setState({ isGameStarted: false, gameState: null, controller: null }); }}
-              style={{ padding: '3px 8px', borderRadius: 7, fontSize: 11, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}
+            <button onClick={() => setLeaveConfirmOpen(true)}
+              style={{ padding: '3px 8px', borderRadius: 7, fontSize: 11, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-faint)', cursor: 'pointer' }}
             >✕</button>
           </div>
         </div>
@@ -273,8 +295,8 @@ const App: React.FC = () => {
               <div style={{
                 position: 'absolute', top: 10, left: 10, zIndex: 10,
                 width: 190, maxHeight: 'calc(100% - 20px)', overflow: 'hidden auto',
-                background: 'rgba(8,8,14,0.88)', backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 8,
+                background: 'var(--surface-panel)', backdropFilter: 'blur(20px)',
+                border: '1px solid var(--border-subtle)', borderRadius: 12, padding: 8,
               }}>
                 <OddsPanel />
               </div>
@@ -286,14 +308,15 @@ const App: React.FC = () => {
           {rightPanel && (
             <div style={{
               width: 240, flexShrink: 0, overflow: 'hidden auto',
-              borderLeft: '1px solid rgba(255,255,255,0.05)',
-              background: 'rgba(0,0,0,0.3)', padding: 8,
+              borderLeft: '1px solid var(--border-subtle)',
+              background: 'var(--surface-bar)', padding: 8,
               display: 'flex', flexDirection: 'column', gap: 8,
             }}>
               {rightPanel === 'tutorial' && <TutorialPanel />}
               {rightPanel === 'chat'     && <StrategyChat />}
               {rightPanel === 'stats'    && <StatsPanel />}
               {rightPanel === 'history'  && <HandHistoryPanel />}
+              {rightPanel === 'review'   && <ReviewPanel />}
               <RecentHandsBar />
             </div>
           )}
@@ -316,35 +339,43 @@ const App: React.FC = () => {
           >⏭ Skip</button>
         )}
 
-        <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+        <ConfirmDialog
+        open={leaveConfirmOpen}
+        message={t('ui.backToMenu')}
+        confirmLabel={t('ui.mainMenu')}
+        cancelLabel={t('ui.close')}
+        onConfirm={() => { setLeaveConfirmOpen(false); useGameStore.getState().leaveGame(); }}
+        onCancel={() => setLeaveConfirmOpen(false)}
+      />
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       </div>
     );
   }
 
   // ─── DESKTOP LAYOUT (≥1024px) ─────────────────────────────────────────────
   return (
-    <div style={{ width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--color-bg)' }}>
+    <div className="app-ambient" style={{ width: '100vw', height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
       {/* Top bar */}
       <div style={{
         height: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 14px', flexShrink: 0,
-        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(24px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        padding: '0 14px', flexShrink: 0, position: 'relative', zIndex: 10,
+        background: 'var(--surface-bar)', backdropFilter: 'blur(24px)',
+        borderBottom: '1px solid var(--border-subtle)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
             ♠ Poker
           </span>
-          <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.12)' }} />
+          <div style={{ width: 1, height: 16, background: 'var(--border-strong)' }} />
           {panels.map(p => (
             <button key={p.id}
               onClick={() => setRightPanel(rightPanel === p.id ? null : p.id)}
               style={{
                 padding: '3px 10px', borderRadius: 7, fontSize: 11, fontWeight: 600,
                 border: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                background: rightPanel === p.id ? 'rgba(212,166,52,0.18)' : 'transparent',
-                color: rightPanel === p.id ? 'var(--color-accent)' : 'rgba(255,255,255,0.4)',
+                background: rightPanel === p.id ? 'var(--color-accent-soft)' : 'transparent',
+                color: rightPanel === p.id ? 'var(--color-accent)' : 'var(--text-tertiary)',
               }}
             >{p.icon} {p.label}</button>
           ))}
@@ -355,19 +386,19 @@ const App: React.FC = () => {
             onClick={() => useSettingsStore.getState().setShowOddsCalculator(!showOdds)}
             style={{
               padding: '3px 10px', borderRadius: 7, fontSize: 11, fontWeight: 600,
-              border: '1px solid ' + (showOdds ? 'rgba(48,209,88,0.4)' : 'rgba(255,255,255,0.1)'),
+              border: '1px solid ' + (showOdds ? 'rgba(48,209,88,0.4)' : 'var(--border-subtle)'),
               background: showOdds ? 'rgba(48,209,88,0.12)' : 'transparent',
-              color: showOdds ? 'var(--color-success)' : 'rgba(255,255,255,0.4)',
+              color: showOdds ? 'var(--color-success)' : 'var(--text-tertiary)',
               cursor: 'pointer', transition: 'all 0.15s',
             }}
           >📊 Odds</button>
           <button
             onClick={() => setSettingsOpen(true)}
-            style={{ padding: '3px 9px', borderRadius: 7, fontSize: 13, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}
+            style={{ padding: '3px 9px', borderRadius: 7, fontSize: 13, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', cursor: 'pointer' }}
           >⚙️</button>
           <button
-            onClick={() => { if (confirm('Zurück zum Hauptmenü?')) useGameStore.setState({ isGameStarted: false, gameState: null, controller: null }); }}
-            style={{ padding: '3px 9px', borderRadius: 7, fontSize: 11, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}
+            onClick={() => setLeaveConfirmOpen(true)}
+            style={{ padding: '3px 9px', borderRadius: 7, fontSize: 11, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-faint)', cursor: 'pointer' }}
           >✕ Menü</button>
         </div>
       </div>
@@ -379,8 +410,8 @@ const App: React.FC = () => {
         {showOdds && (
           <div style={{
             width: 210, flexShrink: 0, overflow: 'hidden auto',
-            borderRight: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(0,0,0,0.25)', padding: 8,
+            borderRight: '1px solid var(--border-subtle)',
+            background: 'var(--surface-bar)', padding: 8,
           }}>
             <OddsPanel />
           </div>
@@ -395,14 +426,15 @@ const App: React.FC = () => {
         {rightPanel && (
           <div style={{
             width: 268, flexShrink: 0, overflow: 'hidden auto',
-            borderLeft: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(0,0,0,0.25)', padding: 8,
+            borderLeft: '1px solid var(--border-subtle)',
+            background: 'var(--surface-bar)', padding: 8,
             display: 'flex', flexDirection: 'column', gap: 8,
           }}>
             {rightPanel === 'tutorial' && <TutorialPanel />}
             {rightPanel === 'chat'     && <StrategyChat />}
             {rightPanel === 'stats'    && <StatsPanel />}
             {rightPanel === 'history'  && <HandHistoryPanel />}
+              {rightPanel === 'review'   && <ReviewPanel />}
             <RecentHandsBar />
           </div>
         )}
@@ -411,8 +443,8 @@ const App: React.FC = () => {
         {!rightPanel && (
           <div style={{
             width: 180, flexShrink: 0, overflow: 'hidden auto',
-            borderLeft: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(0,0,0,0.2)', padding: 8,
+            borderLeft: '1px solid var(--border-subtle)',
+            background: 'var(--surface-bar)', padding: 8,
           }}>
             <RecentHandsBar />
           </div>
@@ -441,6 +473,14 @@ const App: React.FC = () => {
         </button>
       )}
 
+      <ConfirmDialog
+        open={leaveConfirmOpen}
+        message={t('ui.backToMenu')}
+        confirmLabel={t('ui.mainMenu')}
+        cancelLabel={t('ui.close')}
+        onConfirm={() => { setLeaveConfirmOpen(false); useGameStore.getState().leaveGame(); }}
+        onCancel={() => setLeaveConfirmOpen(false)}
+      />
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );

@@ -1,4 +1,4 @@
-import { Card, Player, PlayerStatus, Pot, WinnerResult, EvaluatedHand, HandCategory } from '../types';
+import { Card, Player, PlayerStatus, Pot, WinnerResult, EvaluatedHand } from '../types';
 import { evaluateHand } from '../evaluator/HandEvaluator';
 
 /**

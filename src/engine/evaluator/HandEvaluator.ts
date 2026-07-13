@@ -1,4 +1,4 @@
-import { Card, Rank, Suit, HandCategory, EvaluatedHand, RANK_NAMES, SUIT_SYMBOLS } from '../types';
+import { Card, Rank, HandCategory, EvaluatedHand } from '../types';
 
 /**
  * Evaluates the best 5-card poker hand from up to 7 cards.
@@ -34,13 +34,6 @@ function getRankCounts(cards: Card[]): Map<Rank, number> {
   return counts;
 }
 
-function getSuitCounts(cards: Card[]): Map<Suit, number> {
-  const counts = new Map<Suit, number>();
-  for (const card of cards) {
-    counts.set(card.suit, (counts.get(card.suit) || 0) + 1);
-  }
-  return counts;
-}
 
 function isFlush(cards: Card[]): boolean {
   const suit = cards[0].suit;

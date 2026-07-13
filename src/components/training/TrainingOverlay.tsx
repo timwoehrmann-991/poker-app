@@ -1,12 +1,11 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { useSettingsStore } from '../../store/settingsStore';
-import {
-  ActionType, AIPersonalityType, Position, PlayerStatus, Street,
-} from '../../engine/types';
+import { ActionType, AIPersonalityType, Position } from '../../engine/types';
 import { getAIDecision, AIDecisionResult } from '../../ai/AIPlayer';
-import { computeLegalActions } from '../../engine/game/ActionValidator';
 import { useTranslation } from '../../i18n';
+import { useTrainingStore, boardCardsForStreet } from '../../store/trainingStore';
+import { getTotalPot } from '../../engine/game/PotManager';
 
 interface TrainingFeedback {
   playerAction: ActionType;
@@ -26,8 +25,10 @@ export const TrainingOverlay: React.FC = () => {
 
   const [feedback, setFeedback] = useState<TrainingFeedback | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [lastHandNumber, setLastHandNumber] = useState(0);
   const [feedbackHistory, setFeedbackHistory] = useState<TrainingFeedback[]>([]);
+  // Letzter GTO-Hinweis — mit den ECHTEN legalen Aktionen der Situation berechnet,
+  // bevor der Spieler gehandelt hat. Das Feedback vergleicht dagegen.
+  const lastHintRef = useRef<AIDecisionResult | null>(null);
 
   // Track when human takes an action - compute optimal play
   const actionCount = gameState?.actionHistory.length || 0;
@@ -46,86 +47,87 @@ export const TrainingOverlay: React.FC = () => {
     // Skip blind posts
     if (lastAction.type === ActionType.PostSmallBlind || lastAction.type === ActionType.PostBigBlind) return;
 
-    // We need to compute what the GTO AI would have done in this situation
-    // We use the state BEFORE the action was taken, which we approximate
-    // by creating a synthetic context
-    try {
-      const posMap = controller.getPositionMap();
-      const position = posMap.get(humanPlayer.seatIndex) || Position.Button;
+    const gtoDecision = lastHintRef.current;
+    if (!gtoDecision) return;
 
-      // Get legal actions for comparison (approximate - use current state's context)
-      const legalActions = computeLegalActions(
-        humanPlayer,
-        gameState.config.bigBlind, // approximate highestBet
-        gameState.config.bigBlind,
-        gameState.street,
-        gameState.config.bigBlind,
-      );
+    const fb = computeFeedback(lastAction.type, lastAction.amount, gtoDecision);
+    setFeedback(fb);
+    setShowFeedback(true);
+    setFeedbackHistory(prev => [...prev.slice(-19), fb]); // Keep last 20
 
-      // Ask GTO AI what it would do
-      const gtoDecision = getAIDecision(
-        AIPersonalityType.GTOBalanced,
-        gameState,
-        humanPlayer,
-        position,
-        legalActions,
-      );
+    // Situation vollständig festhalten — für Session-Review und Fehler-Replay
+    const posMap = controller.getPositionMap();
+    useTrainingStore.getState().addRecord({
+      id: `${Date.now()}-${gameState.handNumber}-${actionCount}`,
+      timestamp: Date.now(),
+      handNumber: gameState.handNumber,
+      rating: fb.rating,
+      playerAction: fb.playerAction,
+      playerAmount: fb.playerAmount,
+      optimalAction: fb.optimalAction,
+      optimalAmount: fb.optimalAmount,
+      reasoning: fb.reasoning,
+      street: lastAction.street,
+      holeCards: humanPlayer.holeCards,
+      board: gameState.communityCards.slice(0, boardCardsForStreet(lastAction.street)),
+      position: posMap.get(humanPlayer.seatIndex) ?? '?',
+      potSize: getTotalPot(gameState.pots) + gameState.players.reduce((s, p) => s + p.currentBet, 0),
+    });
 
-      const fb = computeFeedback(lastAction.type, lastAction.amount, gtoDecision);
-      setFeedback(fb);
-      setShowFeedback(true);
-      setFeedbackHistory(prev => [...prev.slice(-19), fb]); // Keep last 20
-
-      // Auto-hide after 3 seconds
-      const timer = setTimeout(() => setShowFeedback(false), 3500);
-      return () => clearTimeout(timer);
-    } catch {
-      // Silently fail - don't interrupt gameplay
-    }
+    // Fehler bleiben stehen bis zum Wegklicken (der Lernmoment!),
+    // gute Züge verschwinden von selbst
+    if (fb.rating === 'mistake' || fb.rating === 'blunder') return;
+    const timer = setTimeout(() => setShowFeedback(false), 3500);
+    return () => clearTimeout(timer);
   }, [actionCount, beginnerMode]);
 
-  // Show hint before human acts
-  const [hint, setHint] = useState<AIDecisionResult | null>(null);
+  // Hint direkt aus dem Spielzustand ableiten — deterministisch,
+  // gleiche Situation ergibt immer dieselbe Empfehlung
   const [showHint, setShowHint] = useState(false);
-
-  // Compute hint when it's human's turn
-  useEffect(() => {
-    if (!beginnerMode || !gameState || !controller) {
-      setHint(null);
-      return;
-    }
-
-    if (gameState.activePlayerIndex === null) return;
+  const hint = useMemo<AIDecisionResult | null>(() => {
+    if (!beginnerMode || !gameState || !controller) return null;
+    if (gameState.activePlayerIndex === null) return null;
     const activePlayer = gameState.players[gameState.activePlayerIndex];
-    if (!activePlayer.isHuman) {
-      setHint(null);
-      return;
-    }
+    if (!activePlayer.isHuman) return null;
 
     try {
       const posMap = controller.getPositionMap();
       const position = posMap.get(activePlayer.seatIndex) || Position.Button;
       const legalActions = controller.getLegalActions(activePlayer.id);
-      if (!legalActions) return;
+      if (!legalActions) return null;
 
-      const gtoDecision = getAIDecision(
+      return getAIDecision(
         AIPersonalityType.GTOBalanced,
         gameState,
         activePlayer,
         position,
         legalActions,
+        { deterministic: true },
       );
-
-      setHint(gtoDecision);
     } catch {
-      setHint(null);
+      return null;
     }
-  }, [gameState?.activePlayerIndex, beginnerMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState?.activePlayerIndex, gameState?.street, beginnerMode]);
+
+  // Letzten Hint für den Feedback-Vergleich festhalten
+  useEffect(() => {
+    if (hint) lastHintRef.current = hint;
+  }, [hint]);
+
+  const isHumanTurnNow = gameState?.activePlayerIndex !== null && gameState !== null &&
+    gameState.players[gameState.activePlayerIndex!]?.isHuman === true;
+
+  // Timer pausieren, solange der Tipp offen ist — Lesen ohne Zeitdruck
+  useEffect(() => {
+    const paused = beginnerMode && showHint && isHumanTurnNow;
+    useGameStore.getState().setTimerPaused(paused);
+    return () => useGameStore.getState().setTimerPaused(false);
+  }, [showHint, isHumanTurnNow, beginnerMode]);
 
   if (!beginnerMode) return null;
 
-  const isHumanTurn = gameState?.activePlayerIndex !== null &&
-    gameState?.players[gameState.activePlayerIndex!]?.isHuman;
+  const isHumanTurn = isHumanTurnNow;
 
   // Calculate session accuracy
   const accuracy = feedbackHistory.length > 0
@@ -162,7 +164,7 @@ export const TrainingOverlay: React.FC = () => {
       {showFeedback && feedback && (
         <div style={{
           ...feedbackStyle,
-          background: 'rgba(8,8,16,0.94)', backdropFilter: 'blur(14px)',
+          background: 'var(--color-bg-elevated)', backdropFilter: 'blur(14px)',
           border: `1px solid ${getRatingColor(feedback.rating)}50`,
           borderRadius: 14, padding: '8px 12px',
           boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${getRatingColor(feedback.rating)}20`,
@@ -174,18 +176,30 @@ export const TrainingOverlay: React.FC = () => {
             </span>
           </div>
           {!feedback.isOptimal && (
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
               Optimal:{' '}
               <span style={{ color: '#30d158', fontWeight: 600 }}>
-                {formatActionLabel(feedback.optimalAction)}
+                {t(`action.${feedback.optimalAction}` as Parameters<typeof t>[0])}
                 {feedback.optimalAmount > 0 ? ` €${feedback.optimalAmount}` : ''}
               </span>
             </div>
           )}
           {feedback.reasoning && (
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 3 }}>
+            <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 3 }}>
               {feedback.reasoning}
             </div>
+          )}
+          {(feedback.rating === 'mistake' || feedback.rating === 'blunder') && (
+            <button
+              onClick={() => setShowFeedback(false)}
+              style={{
+                marginTop: 8, width: '100%', padding: '6px 10px', borderRadius: 8,
+                background: 'var(--surface-inset)', border: '1px solid var(--border-subtle)',
+                color: 'var(--text-secondary)', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              Verstanden ✓
+            </button>
           )}
         </div>
       )}
@@ -194,7 +208,7 @@ export const TrainingOverlay: React.FC = () => {
       {isHumanTurn && hint && showHint && (
         <div style={{
           ...hintStyle,
-          background: 'rgba(8,8,16,0.94)', backdropFilter: 'blur(14px)',
+          background: 'var(--color-bg-elevated)', backdropFilter: 'blur(14px)',
           border: '1px solid rgba(155,89,182,0.45)',
           borderRadius: 14, padding: '8px 12px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
@@ -202,11 +216,11 @@ export const TrainingOverlay: React.FC = () => {
           <div style={{ fontSize: 10, fontWeight: 700, color: '#bf5af2', letterSpacing: '0.06em', marginBottom: 4 }}>
             💡 GTO-Empfehlung
           </div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
-            {formatActionLabel(hint.action)}{hint.amount > 0 ? ` €${hint.amount}` : ''}
+          <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 600 }}>
+            {t(`action.${hint.action}` as Parameters<typeof t>[0])}{hint.amount > 0 ? ` €${hint.amount}` : ''}
           </div>
           {hint.reasoning && (
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 3 }}>
+            <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 3 }}>
               {hint.reasoning}
             </div>
           )}
@@ -220,7 +234,7 @@ export const TrainingOverlay: React.FC = () => {
           style={{
             position: 'fixed', bottom: 20, right: 16, zIndex: 60,
             padding: '8px 14px', borderRadius: 24,
-            background: showHint ? 'rgba(191,90,242,0.85)' : 'rgba(20,20,35,0.88)',
+            background: showHint ? 'rgba(191,90,242,0.85)' : 'var(--color-bg-elevated)',
             backdropFilter: 'blur(12px)',
             border: '1px solid ' + (showHint ? 'rgba(191,90,242,0.6)' : 'rgba(255,255,255,0.12)'),
             color: showHint ? '#fff' : 'rgba(255,255,255,0.6)',
@@ -301,17 +315,7 @@ function isPassiveVariant(player: ActionType, optimal: ActionType): boolean {
   return false;
 }
 
-function formatActionLabel(action: ActionType): string {
-  const labels: Record<string, string> = {
-    fold: 'Fold',
-    check: 'Check',
-    call: 'Call',
-    bet: 'Bet',
-    raise: 'Raise',
-    allIn: 'All-In',
-  };
-  return labels[action] || action;
-}
+
 
 function getRatingColor(rating: TrainingFeedback['rating']): string {
   switch (rating) {

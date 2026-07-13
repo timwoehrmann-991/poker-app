@@ -122,6 +122,7 @@ export interface PlayerAction {
   playerId: PlayerId;
   type: ActionType;
   amount: number;
+  street: Street;
   timestamp: number;
 }
 
@@ -199,7 +200,31 @@ export interface HandRecord {
   pots: Pot[];
   winners: WinnerResult[];
   finalStreet: Street;
+  /** Hero-Equity je Street (vom Odds-Worker gemessen, nachträglich befüllt) */
+  heroEquityByStreet?: Partial<Record<Street, number>>;
 }
+
+/** Vordefinierte Spielsituation für Szenario-Training und Tests */
+export interface HandScenario {
+  /** Feste Hole Cards je Spieler-ID (fehlende Spieler bekommen Zufallskarten) */
+  holeCards?: Record<PlayerId, [Card, Card]>;
+  /** Feste Board-Karten in Aufdeck-Reihenfolge (bis zu 5) */
+  board?: Card[];
+  /** Fester Dealer-Sitz */
+  dealerSeatIndex?: number;
+}
+
+/** Ereignisse der Engine — die UI spielt sie sequenziell ab (Animationen, Sounds) */
+export type GameEvent =
+  | { type: 'handStarted'; handNumber: number; dealerSeatIndex: number }
+  | { type: 'blindsPosted'; smallBlind: number; bigBlind: number }
+  | { type: 'holeCardsDealt'; playerIds: PlayerId[] }
+  | { type: 'actionPerformed'; playerId: PlayerId; action: ActionType; amount: number; street: Street }
+  | { type: 'betsCollected'; street: Street; bets: { playerId: PlayerId; amount: number }[] }
+  | { type: 'streetDealt'; street: Street; cards: Card[] }
+  | { type: 'showdown'; playerIds: PlayerId[] }
+  | { type: 'potAwarded'; winners: WinnerResult[] }
+  | { type: 'handEnded' };
 
 export enum AIPersonalityType {
   Rock = 'rock',

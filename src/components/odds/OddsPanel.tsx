@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { useOddsCalculator } from '../../hooks/useOddsCalculator';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -23,6 +23,16 @@ export const OddsPanel: React.FC = () => {
     showOdds && !!gameState?.isHandInProgress,
   );
 
+  // Equity der aktuellen Street in den Hand-Record melden (Session-Review)
+  const street = gameState?.street;
+  const equity = result?.equity;
+  useEffect(() => {
+    if (equity !== undefined && street && gameState?.isHandInProgress) {
+      useGameStore.getState().reportHeroEquity(street, equity);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [equity, street]);
+
   if (!showOdds || !gameState?.isHandInProgress || !humanPlayer?.holeCards) return null;
 
   const totalPot = getTotalPot(gameState.pots) + gameState.players.reduce((s, p) => s + p.currentBet, 0);
@@ -35,25 +45,37 @@ export const OddsPanel: React.FC = () => {
 
   const winPct = result ? result.winProbability * 100 : 0;
 
+  // Effektiver Stack: mehr als der größte Gegnerstack kann nie gewonnen werden
+  const maxOpponentChips = Math.max(0, ...gameState.players
+    .filter(p => !p.isHuman && (p.status === PlayerStatus.Active || p.status === PlayerStatus.AllIn))
+    .map(p => p.chips + p.currentBet));
+  const effectiveStack = Math.min(humanPlayer.chips + humanPlayer.currentBet, maxOpponentChips);
+  const spr = totalPot > 0 ? effectiveStack / totalPot : 0;
+  const bb = gameState.config.bigBlind;
+
+  // Rule of 4/2: nur echte Draw-Outs zählen (keine Kicker-Verbesserungen)
+  const ruleOuts = result ? result.outs.filter(o => o.countsForRule).reduce((s, o) => s + o.outs, 0) : 0;
+
   return (
     <div style={{
-      background: 'rgba(10,10,18,0.82)',
+      background: 'var(--surface-panel)',
       backdropFilter: 'blur(24px)',
-      border: '1px solid rgba(255,255,255,0.09)',
+      border: '1px solid var(--border-subtle)',
       borderRadius: 16,
       padding: 14,
       overflow: 'hidden',
+      boxShadow: 'var(--glass-shadow)',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
         <span style={{ fontSize: 13 }}>📊</span>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)' }}>
           {t('odds.title')}
         </span>
       </div>
 
       {isCalculating && !result ? (
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '16px 0', letterSpacing: '0.04em' }}>
+        <div style={{ fontSize: 11, color: 'var(--text-tertiary)', textAlign: 'center', padding: '16px 0', letterSpacing: '0.04em' }}>
           {t('odds.calculating')}…
         </div>
       ) : result ? (
@@ -62,7 +84,7 @@ export const OddsPanel: React.FC = () => {
           {/* Win probability — hero stat */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {t('odds.winProbability')}
               </span>
               <span style={{ fontSize: 24, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: getEquityColor(result.winProbability), letterSpacing: '-0.02em' }}>
@@ -70,7 +92,7 @@ export const OddsPanel: React.FC = () => {
               </span>
             </div>
             {/* Progress bar */}
-            <div style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: 6, background: 'var(--surface-inset)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 3,
                 width: `${winPct}%`,
@@ -80,25 +102,44 @@ export const OddsPanel: React.FC = () => {
               }} />
             </div>
             {/* Win/Tie/Loss breakdown */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>
-              <span style={{ color: '#30d158' }}>W {(result.winProbability * 100).toFixed(0)}%</span>
-              <span style={{ color: '#ff9f0a' }}>T {(result.tieProbability * 100).toFixed(0)}%</span>
-              <span style={{ color: '#ff453a' }}>L {(result.lossProbability * 100).toFixed(0)}%</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontSize: 9 }}>
+              <span style={{ color: 'var(--color-success)' }}>W {(result.winProbability * 100).toFixed(0)}%</span>
+              <span style={{ color: 'var(--color-warning)' }}>T {(result.tieProbability * 100).toFixed(0)}%</span>
+              <span style={{ color: 'var(--color-danger)' }}>L {(result.lossProbability * 100).toFixed(0)}%</span>
             </div>
           </div>
 
           <Divider />
 
-          {/* Equity + Pot Odds + EV */}
+          {/* Equity + Pot Odds + EV + Profi-Zahlen (mit Begriffs-Erklärungen) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <StatRow label="Equity" value={`${(result.equity * 100).toFixed(1)}%`} />
+            <StatRow
+              label="Equity"
+              hint="Dein prozentualer Anteil am Pot nach Gewinnwahrscheinlichkeit"
+              value={`${(result.equity * 100).toFixed(1)}%`}
+            />
             {toCall > 0 && (
-              <StatRow label={t('odds.potOdds')} value={`${(potOdds * 100).toFixed(1)}%`} />
+              <StatRow
+                label={t('odds.potOdds')}
+                hint="Preis des Calls: Call ÷ (Pot + Call). Ist deine Equity höher, lohnt der Call"
+                value={`${(potOdds * 100).toFixed(1)}%`}
+              />
             )}
             <StatRow
               label={t('odds.ev')}
+              hint="Erwartungswert: durchschnittlicher Gewinn oder Verlust dieser Aktion"
               value={`${ev >= 0 ? '+' : ''}€${ev.toFixed(1)}`}
-              valueColor={ev >= 0 ? '#30d158' : '#ff453a'}
+              valueColor={ev >= 0 ? 'var(--color-success)' : 'var(--color-danger)'}
+            />
+            <StatRow
+              label="Eff. Stack"
+              hint="Effektiver Stack: mehr als der größte Gegnerstack kann nicht gewonnen werden"
+              value={`${Math.round(effectiveStack / bb)} BB`}
+            />
+            <StatRow
+              label="SPR"
+              hint="Stack-to-Pot Ratio: unter 4 = committed · 4–10 = mittel · über 10 = tiefes Spiel"
+              value={spr.toFixed(1)}
             />
           </div>
 
@@ -112,10 +153,10 @@ export const OddsPanel: React.FC = () => {
             }}>
               <span style={{ fontSize: 14 }}>{isProfitable ? '✅' : '❌'}</span>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: isProfitable ? '#30d158' : '#ff453a' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: isProfitable ? 'var(--color-success)' : 'var(--color-danger)' }}>
                   {isProfitable ? 'Call profitabel' : 'Fold empfohlen'}
                 </div>
-                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>
+                <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 1 }}>
                   Break-even: {(potOdds * 100).toFixed(1)}%
                 </div>
               </div>
@@ -127,28 +168,28 @@ export const OddsPanel: React.FC = () => {
             <>
               <Divider />
               <div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
                   {t('odds.outs')}
                 </div>
                 {result.outs.map((out, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 3 }}>
-                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>{out.drawType}</span>
-                    <span style={{ color: '#fff', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{out.outs} outs</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>{out.drawType}</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{out.outs} outs</span>
                   </div>
                 ))}
-                {gameState.communityCards.length < 5 && (
-                  <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', marginTop: 5, padding: '5px 8px', background: 'rgba(255,255,255,0.04)', borderRadius: 7 }}>
-                    Rule of {gameState.communityCards.length === 3 ? '4' : '2'}:{' '}
-                    ≈{(result.outs.reduce((s, o) => s + o.outs, 0) * (gameState.communityCards.length === 3 ? 4 : 2)).toFixed(0)}%
+                {gameState.communityCards.length < 5 && ruleOuts > 0 && (
+                  <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 5, padding: '5px 8px', background: 'var(--surface-inset)', borderRadius: 7 }}>
+                    Rule of {gameState.communityCards.length === 3 ? '4' : '2'} ({ruleOuts} Draw-Outs):{' '}
+                    ≈{(ruleOuts * (gameState.communityCards.length === 3 ? 4 : 2)).toFixed(0)}%
                   </div>
                 )}
               </div>
             </>
           )}
 
-          {/* Simulation info */}
-          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.18)', textAlign: 'right', marginTop: 2 }}>
-            50k Sims · {result.calculationTimeMs.toFixed(0)}ms
+          {/* Simulation info — ehrlich: Equity gilt gegen Zufallshände */}
+          <div style={{ fontSize: 9, color: 'var(--text-faint)', textAlign: 'right', marginTop: 2 }}>
+            vs. {opponents} zufällige {opponents === 1 ? 'Hand' : 'Hände'} · 50k Sims
           </div>
         </div>
       ) : null}
@@ -163,12 +204,21 @@ function getEquityColor(equity: number): string {
 }
 
 const Divider: React.FC = () => (
-  <div style={{ height: 1, background: 'rgba(255,255,255,0.07)' }} />
+  <div style={{ height: 1, background: 'var(--border-subtle)' }} />
 );
 
-const StatRow: React.FC<{ label: string; value: string; valueColor?: string }> = ({ label, value, valueColor }) => (
+const StatRow: React.FC<{ label: string; value: string; valueColor?: string; hint?: string }> = ({ label, value, valueColor, hint }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
-    <span style={{ fontSize: 13, fontWeight: 700, color: valueColor || '#fff', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+    <span
+      title={hint}
+      style={{
+        fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em',
+        cursor: hint ? 'help' : undefined,
+        borderBottom: hint ? '1px dotted var(--text-faint)' : undefined,
+      }}
+    >
+      {label}
+    </span>
+    <span style={{ fontSize: 13, fontWeight: 700, color: valueColor || 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
   </div>
 );

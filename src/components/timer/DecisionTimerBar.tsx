@@ -26,7 +26,7 @@ export const DecisionTimerBar: React.FC<DecisionTimerBarProps> = React.memo(({ t
       {/* Timer bar */}
       <div
         className="relative h-1.5 rounded-full overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.1)' }}
+        style={{ background: 'var(--surface-inset)' }}
       >
         <div
           className="h-full rounded-full transition-all"
