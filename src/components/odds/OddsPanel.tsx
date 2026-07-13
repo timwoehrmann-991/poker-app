@@ -81,15 +81,13 @@ export const OddsPanel: React.FC = () => {
       ) : result ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          {/* Win probability — hero stat */}
+          {/* Win probability — hero stat (gestapelt, damit die Zahl nie abgeschnitten wird) */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-              <span style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                {t('odds.winProbability')}
-              </span>
-              <span style={{ fontSize: 24, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: getEquityColor(result.winProbability), letterSpacing: '-0.02em' }}>
-                {winPct.toFixed(1)}%
-              </span>
+            <div style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
+              {t('odds.winProbability')}
+            </div>
+            <div style={{ fontSize: 38, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: getEquityColor(result.winProbability), letterSpacing: '-0.03em', lineHeight: 1, whiteSpace: 'nowrap', marginBottom: 8 }}>
+              {winPct.toFixed(1)}%
             </div>
             {/* Progress bar */}
             <div style={{ height: 6, background: 'var(--surface-inset)', borderRadius: 3, overflow: 'hidden' }}>
