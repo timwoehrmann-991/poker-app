@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const feltColor       = useSettingsStore(s => s.feltColor);
   const showOdds        = useSettingsStore(s => s.showOddsCalculator);
   const gameState       = useGameStore(s => s.gameState);
+  const hasHistory      = useGameStore(s => s.handHistory.length > 0);
 
   const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -328,20 +329,26 @@ const App: React.FC = () => {
             )}
           </div>
 
-          {/* Right panel — narrower on tablet */}
+          {/* Right panel — narrower on tablet; oben Panel, unten letzte Hände, je eigener Scroll */}
           {rightPanel && (
             <div style={{
-              width: 240, flexShrink: 0, overflow: 'hidden auto',
+              width: 240, flexShrink: 0, overflow: 'hidden',
               borderLeft: '1px solid var(--border-subtle)',
               background: 'var(--surface-bar)', padding: 8,
               display: 'flex', flexDirection: 'column', gap: 8,
             }}>
-              {rightPanel === 'tutorial' && <TutorialPanel />}
-              {rightPanel === 'chat'     && <StrategyChat />}
-              {rightPanel === 'stats'    && <StatsPanel />}
-              {rightPanel === 'history'  && <HandHistoryPanel />}
-              {rightPanel === 'review'   && <ReviewPanel />}
-              {rightPanel !== 'history'  && <RecentHandsBar />}
+              <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                {rightPanel === 'tutorial' && <TutorialPanel />}
+                {rightPanel === 'chat'     && <StrategyChat />}
+                {rightPanel === 'stats'    && <StatsPanel />}
+                {rightPanel === 'history'  && <HandHistoryPanel />}
+                {rightPanel === 'review'   && <ReviewPanel />}
+              </div>
+              {rightPanel !== 'history' && hasHistory && (
+                <div style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
+                  <RecentHandsBar />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -446,20 +453,26 @@ const App: React.FC = () => {
           <PokerTable />
         </div>
 
-        {/* Right: panel + recent hands stacked */}
+        {/* Right: panel (obere Hälfte) + letzte Hände (untere Hälfte), je eigener Scroll */}
         {rightPanel && (
           <div style={{
-            width: 268, flexShrink: 0, overflow: 'hidden auto',
+            width: 268, flexShrink: 0, overflow: 'hidden',
             borderLeft: '1px solid var(--border-subtle)',
             background: 'var(--surface-bar)', padding: 8,
             display: 'flex', flexDirection: 'column', gap: 8,
           }}>
-            {rightPanel === 'tutorial' && <TutorialPanel />}
-            {rightPanel === 'chat'     && <StrategyChat />}
-            {rightPanel === 'stats'    && <StatsPanel />}
-            {rightPanel === 'history'  && <HandHistoryPanel />}
+            <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+              {rightPanel === 'tutorial' && <TutorialPanel />}
+              {rightPanel === 'chat'     && <StrategyChat />}
+              {rightPanel === 'stats'    && <StatsPanel />}
+              {rightPanel === 'history'  && <HandHistoryPanel />}
               {rightPanel === 'review'   && <ReviewPanel />}
-            {rightPanel !== 'history'  && <RecentHandsBar />}
+            </div>
+            {rightPanel !== 'history' && hasHistory && (
+              <div style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
+                <RecentHandsBar />
+              </div>
+            )}
           </div>
         )}
 
